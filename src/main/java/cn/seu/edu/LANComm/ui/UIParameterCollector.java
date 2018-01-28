@@ -9,68 +9,164 @@ package cn.seu.edu.LANComm.ui;
  * @date 2018-1-28-14:58
  */
 public final class UIParameterCollector {
-    private static String mode;
-    private static String rb;
-    private static String fc;
-    private static String transmitGain;
-    private static String receiveGain;
-    private static String frequenceOffset;
-    private static String hop;
+    /**
+     * 通信模式
+     */
+    private String mode;
+    /**
+     * 码元速率与单位
+     */
+    private Double rb;
+    private String rbUnit;
+    /**
+     * 载波频率与单位
+     */
+    private Double fc;
+    private String fcUnit;
+    /**
+     * 发射增益与单位
+     */
+    private Double transmitGain;
+    private String transmitGainUnit;
+    /**
+     * 接收增益与单位
+     */
+    private Double receiveGain;
+    private String receiveGainUnit;
+    /**
+     * 信号频偏与单位
+     */
+    private Double frequenceOffset;
+    private String frequenceOffsetUnit;
+    /**
+     * 跳频速率与单位
+     */
+    private Double hop;
+    private String hopUnit;
 
+    public UIParameterCollector() {}
 
-    public static String getMode() {
+    public String getMode() {
         return mode;
     }
 
-    public static void setMode(String mode) {
-        UIParameterCollector.mode = mode;
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 
-    public static String getRb() {
+    public Double getRb() {
         return rb;
     }
 
-    public static void setRb(String rb) {
-        UIParameterCollector.rb = rb;
+    public void setRb(Double rb) {
+        this.rb = rb;
     }
 
-    public static String getFc() {
+    public String getRbUnit() {
+        return rbUnit;
+    }
+
+    public void setRbUnit(String rbUnit) {
+        this.rbUnit = rbUnit;
+    }
+
+    public Double getFc() {
         return fc;
     }
 
-    public static void setFc(String fc) {
-        UIParameterCollector.fc = fc;
+    public void setFc(Double fc) {
+        this.fc = fc;
     }
 
-    public static String getTransmitGain() {
+    public String getFcUnit() {
+        return fcUnit;
+    }
+
+    public void setFcUnit(String fcUnit) {
+        this.fcUnit = fcUnit;
+    }
+
+    public Double getTransmitGain() {
         return transmitGain;
     }
 
-    public static void setTransmitGain(String transmitGain) {
-        UIParameterCollector.transmitGain = transmitGain;
+    public void setTransmitGain(Double transmitGain) {
+        this.transmitGain = transmitGain;
     }
 
-    public static String getReceiveGain() {
+    public String getTransmitGainUnit() {
+        return transmitGainUnit;
+    }
+
+    public void setTransmitGainUnit(String transmitGainUnit) {
+        this.transmitGainUnit = transmitGainUnit;
+    }
+
+    public Double getReceiveGain() {
         return receiveGain;
     }
 
-    public static void setReceiveGain(String receiveGain) {
-        UIParameterCollector.receiveGain = receiveGain;
+    public void setReceiveGain(Double receiveGain) {
+        this.receiveGain = receiveGain;
     }
 
-    public static String getFrequenceOffset() {
+    public String getReceiveGainUnit() {
+        return receiveGainUnit;
+    }
+
+    public void setReceiveGainUnit(String receiveGainUnit) {
+        this.receiveGainUnit = receiveGainUnit;
+    }
+
+    public Double getFrequenceOffset() {
         return frequenceOffset;
     }
 
-    public static void setFrequenceOffset(String frequenceOffset) {
-        UIParameterCollector.frequenceOffset = frequenceOffset;
+    public void setFrequenceOffset(Double frequenceOffset) {
+        this.frequenceOffset = frequenceOffset;
     }
 
-    public static String getHop() {
+    public String getFrequenceOffsetUnit() {
+        return frequenceOffsetUnit;
+    }
+
+    public void setFrequenceOffsetUnit(String frequenceOffsetUnit) {
+        this.frequenceOffsetUnit = frequenceOffsetUnit;
+    }
+
+    public Double getHop() {
         return hop;
     }
 
-    public static void setHop(String hop) {
-        UIParameterCollector.hop = hop;
+    public void setHop(Double hop) {
+        this.hop = hop;
     }
+
+    public String getHopUnit() {
+        return hopUnit;
+    }
+
+    public void setHopUnit(String hopUnit) {
+        this.hopUnit = hopUnit;
+    }
+
+    @Override
+    public String toString() {
+        return "UIParameterCollector{" +
+                "mode='" + mode + '\'' +
+                ", rb=" + rb +
+                ", rbUnit='" + rbUnit + '\'' +
+                ", fc=" + fc +
+                ", fcUnit='" + fcUnit + '\'' +
+                ", transmitGain=" + transmitGain +
+                ", transmitGainUnit='" + transmitGainUnit + '\'' +
+                ", receiveGain=" + receiveGain +
+                ", receiveGainUnit='" + receiveGainUnit + '\'' +
+                ", frequenceOffset=" + frequenceOffset +
+                ", frequenceOffsetUnit='" + frequenceOffsetUnit + '\'' +
+                ", hop=" + hop +
+                ", hopUnit='" + hopUnit + '\'' +
+                '}';
+    }
+
 }

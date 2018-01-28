@@ -20,12 +20,7 @@ import java.util.List;
  * @date 2018-1-27:41
  *
  */
-public class CommunicationModeSelectorPart {
-    public static List<Object> list = new ArrayList<>(2);
-    static   {
-        list.add(0);
-        list.add(null);
-    }
+public class CommunicationModeSelectorAndParameterSettingPart {
     private static String selectedMode;
     private static JPanel parameterSettingPart = new JPanel();
     /**
@@ -39,11 +34,12 @@ public class CommunicationModeSelectorPart {
     private static final int DEFAULT_PANEL_WIDTH = 200;
     private static final int DEFAULT_PANEL_HEIGHT = 300;
 
-    public static List<Object> createCommunicationModeSelectorPanel(String propertyPath) {
+    public static JPanel createCommunicationModeSelectorPanel(String propertyPath) {
         // 模式选择 + 参数设置的panel
         JPanel combinedPanel = new JPanel();
         combinedPanel.setBackground(Color.WHITE);
         combinedPanel.setLayout(new FlowLayout());
+
         // 通信模式选择UI部分
         // 模式选择的panel
         JPanel panel = new JPanel();
@@ -60,16 +56,12 @@ public class CommunicationModeSelectorPart {
                 radioButton.setFont(FontEnum.RADIOBUTTOBN_FONT.getFont());
                 radioButton.setActionCommand(supportedModeName.get(i));
                 selectedMode = radioButton.getActionCommand().trim();
-                list.set(1, radioButton.getActionCommand());
                 radioButton.setBackground(Color.WHITE);
                 // 专门用于参数传输
                 radioButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         // TODO: 2018/1/28 增加工作模式选择参数传递
-                        UIParameterCollector.setMode(radioButton.getActionCommand());
-                        list.set(1, radioButton.getActionCommand());
-                        System.out.println("list" + list);
                         System.out.println(radioButton.getText().trim() + " " + radioButton.getActionCommand());
                     }
                 });
@@ -81,9 +73,8 @@ public class CommunicationModeSelectorPart {
                         combinedPanel.remove(1);
                         JPanel panelToUpdate = CommunicationParameterSettingPart.createCommunicationParameterSettingPanel(
                                                                             selectedMode, propertyPath);
-                        panelToUpdate.paint(panelToUpdate.getGraphics());
                         combinedPanel.add(panelToUpdate);
-                        combinedPanel.paint(panelToUpdate.getGraphics());
+                        combinedPanel.paintAll(combinedPanel.getGraphics());
 
                     }
                 });
@@ -100,10 +91,7 @@ public class CommunicationModeSelectorPart {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         // TODO: 2018/1/28 增加工作模式选择参数传递
-                        UIParameterCollector.setMode(radioButton.getActionCommand());
                         selectedMode = radioButton.getActionCommand().trim();
-                        list.set(1, radioButton.getActionCommand());
-                        System.out.println("list" + list);
                         parameterSettingPart.paint(parameterSettingPart.getGraphics());
                         System.out.println(radioButton.getText().trim() + " " + radioButton.getActionCommand());
                     }
@@ -116,11 +104,8 @@ public class CommunicationModeSelectorPart {
                         combinedPanel.remove(1);
                         JPanel panelToUpdate = CommunicationParameterSettingPart.createCommunicationParameterSettingPanel(
                                 selectedMode, propertyPath);
-                        panelToUpdate.paint(panelToUpdate.getGraphics());
                         combinedPanel.add(panelToUpdate);
-                        combinedPanel.paint(panelToUpdate.getGraphics());
-
-
+                        combinedPanel.paintAll(combinedPanel.getGraphics());
                     }
                 });
                 buttonGroup.add(radioButton);
@@ -138,9 +123,7 @@ public class CommunicationModeSelectorPart {
         JPanel parameterSettingPanel = CommunicationParameterSettingPart.createCommunicationParameterSettingPanel(selectedMode, propertyPath);
         combinedPanel.add(panel);
         combinedPanel.add(parameterSettingPanel);
-        list.set(0, combinedPanel);
-
-        return list;
+        return combinedPanel;
     }
 
     /**
@@ -164,14 +147,13 @@ public class CommunicationModeSelectorPart {
     public static void main(String[] args) {
         JFrame frame = new JFrame();
 
-        frame.add((JPanel)createCommunicationModeSelectorPanel("LANComm.proerties").get(0));
-        System.out.println("frame"  + list.get(1));
+        frame.add(createCommunicationModeSelectorPanel("LANComm.proerties"));
         frame.setVisible(true);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     public static void setParameterSettingPart(JPanel parameterSettingPart) {
-        CommunicationModeSelectorPart.parameterSettingPart = parameterSettingPart;
+        CommunicationModeSelectorAndParameterSettingPart.parameterSettingPart = parameterSettingPart;
     }
 }

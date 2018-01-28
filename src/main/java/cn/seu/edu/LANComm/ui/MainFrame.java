@@ -2,10 +2,7 @@ package cn.seu.edu.LANComm.ui;
 
 
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import java.awt.*;
-import java.util.List;
 
 /**
  * Created by Administrator on 2018/1/26.
@@ -25,12 +22,9 @@ public class MainFrame {
 }
 
 class FrameSet extends JFrame {
-    private static final String DEFAULT_LOOKANDFEEL_CLASSNAME = "javax.swing.plaf.metal.MetalLookAndFeel";
-    private static final String PREPERED_LOOKANDFEEL_CLASSNAME1 = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
-    private static final String PREPERED_LOOKANDFEEL_CLASSNAME2 = "com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel";
 
     /**
-     * 主显示器的像素点大小screenSize
+     * 设置最优尺寸
      */
     private static final int DEFAULT_WIDTH = 1000;
     private static final int DEFAULT_HEIGHT = 300;
@@ -51,12 +45,12 @@ class FrameSet extends JFrame {
         super.setLayout(new FlowLayout());
 
         // 通信模式选择部分
-        List<Object> list = CommunicationModeSelectorPart.createCommunicationModeSelectorPanel("LANComm.proerties");
-        super.add((JPanel)list.get(0));
+        super.add(CommunicationModeSelectorAndParameterSettingPart.createCommunicationModeSelectorPanel("LANComm.proerties"));
         // 通信状态部分
         super.add(CommunicationStatusPart.createStatusPanel());
         // 通信收发确认
         super.add(CommunicationTXRxSelectorPart.createCommunicationTXRxSelectorPanel());
+        super.pack();
     }
 
 }

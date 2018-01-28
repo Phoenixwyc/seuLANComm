@@ -24,10 +24,15 @@ public class CommunicationParameterSettingPart {
     private static final int DEFAULT_GRID_ROWS = 8;
     private static final int DEFAULT_GRID_COLUMN = 1;
     /**
+     * 组件标题
+     */
+    private static final String BORDER_TITLE = "参数设置";
+    /**
      * 主 panel 默认大小
      */
     private static final int DEFAULT_PANEL_WIDTH = 400;
     private static final int DEFAULT_PANEL_HEIGHT = 300;
+
     private static final String DEFAULT_MODE = "DQPSK";
     private static String unit ;
     private static Double value;
@@ -40,7 +45,7 @@ public class CommunicationParameterSettingPart {
      * @param mode 工作模式，即DPQSK / DQPSK-DSSS等
      * @return
      */
-    public static JPanel createCommunicationParameterSettingPanel(String mode, String propertyPath) {
+    public static JPanel createCommunicationParameterSettingPanel(String mode, String propertyPath, UIParameterCollector collector) {
         // 存放参数选择的panel，网格布局
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(DEFAULT_GRID_ROWS, DEFAULT_GRID_COLUMN));
@@ -49,10 +54,10 @@ public class CommunicationParameterSettingPart {
         if (mode == null) {
             mode = DEFAULT_MODE;
         }
-        setParameterByFistUnitThenValue(panel, propertyPath, mode);
+        setParameterByFistUnitThenValue(panel, propertyPath, mode, collector);
         Border titledBorder = BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK),
-                                            "通信参数设置", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION,
-                                                FontEnum.BORDER_TITLE_FONT.getFont());
+                                            BORDER_TITLE, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION,
+                                            FontEnum.BORDER_TITLE_FONT.getFont());
         panel.setBorder(titledBorder);
         panel.setBackground(Color.WHITE);
         panel.setPreferredSize(new Dimension(DEFAULT_PANEL_WIDTH, DEFAULT_PANEL_HEIGHT));
@@ -83,6 +88,7 @@ public class CommunicationParameterSettingPart {
      *
      * @return
      */
+    @Deprecated
     private static JCheckBox createSelectorModeCheckBox(JPanel parent) {
         JCheckBox checkBox = new JCheckBox();
         // 增加几个空的JLable，将 CheckBox 位置靠右侧
@@ -103,7 +109,7 @@ public class CommunicationParameterSettingPart {
      * @param propertyPath 配置文件位置
      * @param mode 通信模式, 即DQPSK/DQPSK-DSSS等
      */
-    private static void setParameterByFistUnitThenValue(JPanel parent, String propertyPath, String mode) {
+    private static void setParameterByFistUnitThenValue(JPanel parent, String propertyPath, String mode, UIParameterCollector collector) {
         // 获取mode对应的参数
         Map<String, String> map = ReadModeConfiguration.getCommunicationModeConfigureation(propertyPath, mode);
         // 按照参数的单位进行分组
@@ -130,12 +136,13 @@ public class CommunicationParameterSettingPart {
                     comboBoxUnit.addItem(unit);
                     comboBoxUnit.setBackground(Color.WHITE);
                 }
+                // 专门用于参数传递
                 comboBoxUnit.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         // TODO: 2018/1/28 增加单位选择数据传递
                         unit = (String) comboBoxUnit.getItemAt(comboBoxUnit.getSelectedIndex());
-                        System.out.println("unit : " + unit);
+                        System.out.println("参数传递部分 unit : " + unit);
                     }
                 });
                 // 默认选择第一个
@@ -148,11 +155,12 @@ public class CommunicationParameterSettingPart {
                     comboBoxValue.addItem(value);
                     comboBoxValue.setBackground(Color.WHITE);
                 }
+                // 专门用于参数传递
                 comboBoxValue.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         // TODO: 2018/1/28 增加值选择参数传递
-                        System.out.println("value : " + comboBoxValue.getItemAt(comboBoxValue.getSelectedIndex()));
+                        System.out.println("参数传递部分 value : " + comboBoxValue.getItemAt(comboBoxValue.getSelectedIndex()));
                     }
                 });
 
@@ -190,6 +198,7 @@ public class CommunicationParameterSettingPart {
      * @param propertyPath 配置文件位置
      * @param mode 工作模式 即DQPSK/DQPSK-DSSS等
      */
+    @Deprecated
     private static void setParameterByFirstValueThenValue(JPanel parent, String propertyPath, String mode) {
         // 获取mode对应的参数
         Map<String, String> map = ReadModeConfiguration.getCommunicationModeConfigureation(propertyPath, mode);
@@ -262,10 +271,11 @@ public class CommunicationParameterSettingPart {
     }
 
     public static void main(String[] args) {
+        UIParameterCollector collector = new UIParameterCollector();
         JFrame frame = new JFrame();
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(createCommunicationParameterSettingPanel("DQPSK", "LANComm.proerties"));
+        frame.add(createCommunicationParameterSettingPanel("DQPSK", "LANComm.proerties", collector));
         frame.pack();
     }
 
