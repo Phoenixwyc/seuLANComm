@@ -23,8 +23,8 @@ public class ParameterGroup {
      *               value的形式[值-单位,值-单位,....]
      * @return
      */
-    public static Map<String, Map<String, List<Double>>> groupByUnit(Map<String, String> rowMap) {
-        Map<String, Map<String, List<Double>>> result = new HashMap<>();
+    public static Map<String, Map<String, List<Float>>> groupByUnit(Map<String, String> rowMap) {
+        Map<String, Map<String, List<Float>>> result = new HashMap<>();
         Set<Map.Entry<String, String>> entries = rowMap.entrySet();
         Iterator<Map.Entry<String, String>> entryIterator = entries.iterator();
         while (entryIterator.hasNext()) {
@@ -34,13 +34,13 @@ public class ParameterGroup {
             // 去除首尾的[]
             int len = tempValues.length();
             String[] kvPairs = tempValues.substring(1, len - 1).split(KVPAIR_SEPARATOR);
-            Map<String, List<Double>> innerMap = new HashMap<>();
+            Map<String, List<Float>> innerMap = new HashMap<>();
             for (String kvPair : kvPairs) {
                 String[] tempKV = kvPair.split(KV_SEPARATOR);
                 String kvPairUnit = tempKV[1].trim();
-                Double kvPairValue = Double.parseDouble(tempKV[0].trim());
+                Float kvPairValue = Float.parseFloat(tempKV[0].trim());
                 if (!innerMap.containsKey(kvPairUnit)) {
-                    List<Double> tempList = new ArrayList<>();
+                    List<Float> tempList = new ArrayList<>();
                     tempList.add(kvPairValue);
                     innerMap.put(kvPairUnit, tempList);
                 } else {
@@ -61,8 +61,8 @@ public class ParameterGroup {
      *               value的形式[值-单位,值-单位,....]
      * @return
      */
-    public static Map<String, Map<Double, List<String>>> groupByNumber(Map<String, String> rowMap) {
-        Map<String, Map<Double, List<String>>> result = new HashMap<>();
+    public static Map<String, Map<Float, List<String>>> groupByNumber(Map<String, String> rowMap) {
+        Map<String, Map<Float, List<String>>> result = new HashMap<>();
         Set<Map.Entry<String, String>> entries = rowMap.entrySet();
         Iterator<Map.Entry<String, String>> entryIterator = entries.iterator();
         while (entryIterator.hasNext()) {
@@ -72,11 +72,11 @@ public class ParameterGroup {
             // 去除首尾的[]
             int len = tempValues.length();
             String[] kvPairs = tempValues.substring(1, len - 1).split(KVPAIR_SEPARATOR);
-            Map<Double, List<String>> innerMap = new HashMap<>();
+            Map<Float, List<String>> innerMap = new HashMap<>();
             for (String kvPair : kvPairs) {
                 String[] tempKV = kvPair.split(KV_SEPARATOR);
                 String kvPairUnit = tempKV[1].trim();
-                Double kvPairValue = Double.parseDouble(tempKV[0].trim());
+                Float kvPairValue = Float.parseFloat(tempKV[0].trim());
                 if (!innerMap.containsKey(kvPairValue)) {
                     List<String> tempList = new ArrayList<>();
                     tempList.add(kvPairUnit);
@@ -98,9 +98,9 @@ public class ParameterGroup {
         dqpskConfig.put("DQPSK-Receive-Gain", "[1-dBm, 2-dBm, 3-dBm, 10-dBm]");
         dqpskConfig.put("DQPSK-Frequence-Offset", "[1-Hz, 2-Hz, 3-kHz]");
 
-        Map<String, Map<String, List<Double>>> res = ParameterGroup.groupByUnit(dqpskConfig);
+        Map<String, Map<String, List<Float>>> res = ParameterGroup.groupByUnit(dqpskConfig);
         System.out.println(res);
-        Map<String, Map<Double, List<String>>> res2 = ParameterGroup.groupByNumber(dqpskConfig);
+        Map<String, Map<Float, List<String>>> res2 = ParameterGroup.groupByNumber(dqpskConfig);
         System.out.println(res2);
     }
 }

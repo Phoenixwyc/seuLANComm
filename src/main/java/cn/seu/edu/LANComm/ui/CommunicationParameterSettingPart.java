@@ -36,7 +36,7 @@ public class CommunicationParameterSettingPart {
 
     private static final String DEFAULT_MODE = "DQPSK";
     private static String unit ;
-    private static Double value;
+    private static Float value;
 
     /**
      * 创建一个动态的参数配置表，具体内容跟随 mode 改变
@@ -114,13 +114,13 @@ public class CommunicationParameterSettingPart {
         // 获取mode对应的参数
         Map<String, String> map = ReadModeConfiguration.getCommunicationModeConfigureation(propertyPath, mode);
         // 按照参数的单位进行分组
-        Map<String, Map<String, List<Double>>> parameterGroup = ParameterGroup.groupByUnit(map);
+        Map<String, Map<String, List<Float>>> parameterGroup = ParameterGroup.groupByUnit(map);
         // 参数的名字，类似所有名字设置为相同长度
         List<String> parameterNames = ExtendStringToSameLength.extendString(getParameterNames());
         for (String parameterName : parameterNames) {
             // 参数名对应的配置项的key
             String key = mode + "-" + parameterName.trim();
-            Map<String, List<Double>> kvPairsMap = parameterGroup.get(key);
+            Map<String, List<Float>> kvPairsMap = parameterGroup.get(key);
             if (kvPairsMap != null) {
                 // 容纳标签和两个ComboBox的的Panel
                 JPanel innerPanel = new JPanel();
@@ -163,9 +163,9 @@ public class CommunicationParameterSettingPart {
                 comboBoxUnit.setEditable(false);
                 comboBoxUnit.setSelectedIndex(0);
                 // 单位对应的值的combo box
-                List<Double> values = kvPairsMap.get(unit);
+                List<Float> values = kvPairsMap.get(unit);
                 JComboBox comboBoxValue = new JComboBox();
-                for (Double value : values) {
+                for (Float value : values) {
                     comboBoxValue.addItem(value);
                     comboBoxValue.setBackground(Color.WHITE);
                 }
@@ -173,11 +173,11 @@ public class CommunicationParameterSettingPart {
                 comboBoxValue.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        Double value = (Double) comboBoxValue.getItemAt(comboBoxValue.getSelectedIndex());
+                        Float value = (Float) comboBoxValue.getItemAt(comboBoxValue.getSelectedIndex());
                         String valueSetMethodName = UIParameterCollector.getMethodNameMappingValueSetter().get(parameterName.trim());
                         try {
                             Class clazz = UIParameterCollector.class;
-                            Method method = clazz.getMethod(valueSetMethodName, Double.class);
+                            Method method = clazz.getMethod(valueSetMethodName, Float.class);
                             method.invoke(collector, value);
                         } catch (NoSuchMethodException e1) {
                             System.out.println(e1);
@@ -198,7 +198,7 @@ public class CommunicationParameterSettingPart {
                         // step 1 获取本次被选中的元素——单位
                         unit = (String) comboBoxUnit.getItemAt(comboBoxUnit.getSelectedIndex());
                         // step 2 获取单位对应的value
-                        List<Double> valueToUpdate = kvPairsMap.get(unit);
+                        List<Float> valueToUpdate = kvPairsMap.get(unit);
                         // step 3 清除combo box的内容
                         comboBoxValue.removeAllItems();
                         // step 4 填写新的Item
@@ -231,12 +231,12 @@ public class CommunicationParameterSettingPart {
         // 获取mode对应的参数
         Map<String, String> map = ReadModeConfiguration.getCommunicationModeConfigureation(propertyPath, mode);
         // 按照参数的单位进行分组
-        Map<String, Map<Double, List<String>>> parameterGroup = ParameterGroup.groupByNumber(map);
+        Map<String, Map<Float, List<String>>> parameterGroup = ParameterGroup.groupByNumber(map);
         // 参数的名字，类似所有名字设置为相同长度
         List<String> parameterNames = ExtendStringToSameLength.extendString(getParameterNames());
         for (String parameterName : parameterNames) {
             String key = mode + "-" + parameterName.trim();
-            Map<Double, List<String>> kvPairsMap = parameterGroup.get(key);
+            Map<Float, List<String>> kvPairsMap = parameterGroup.get(key);
             if (kvPairsMap != null) {
                 JPanel innerPanel = new JPanel();
                 innerPanel.setLayout(new GridLayout(1, 3));
@@ -245,8 +245,8 @@ public class CommunicationParameterSettingPart {
                 // 值对应的Combo box
                 JComboBox comboBoxValue = new JComboBox();
                 // 获取所有的值
-                Set<Double> valueSet = kvPairsMap.keySet();
-                for (Double value : valueSet) {
+                Set<Float> valueSet = kvPairsMap.keySet();
+                for (Float value : valueSet) {
                     comboBoxValue.addItem(value);
                 }
                 // 这里linstener专门用于处理选择事件
@@ -254,7 +254,7 @@ public class CommunicationParameterSettingPart {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         // TODO: 2018/1/28 增加值选择参数传递
-                        value = (Double) comboBoxValue.getItemAt(comboBoxValue.getSelectedIndex());
+                        value = (Float) comboBoxValue.getItemAt(comboBoxValue.getSelectedIndex());
                         System.out.println(value);
                     }
                 });
@@ -279,7 +279,7 @@ public class CommunicationParameterSettingPart {
                 comboBoxValue.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        value = (Double) comboBoxValue.getItemAt(comboBoxValue.getSelectedIndex());
+                        value = (Float) comboBoxValue.getItemAt(comboBoxValue.getSelectedIndex());
                         List<String> unitToUpdate = kvPairsMap.get(value);
                         comboBoxUnit.removeAllItems();
                         for (int i = 0; i < unitToUpdate.size(); i++) {

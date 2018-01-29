@@ -7,16 +7,13 @@ import java.util.Map;
 
 /**
  * 收集所有组件中被选择的值
- * 这里采用一种比较危险的方式实现
- * 由程序开发者保证数据的完整性与正确性
  * Created by Administrator on 2018/1/27.
  * @author WYCPhoenix
  * @date 2018-1-28-14:58
  */
 public final class UIParameterCollector {
     /**
-     * 增加一个field与对应method的映射关系
-     * 便于后序方法调用
+     * field与对应method的映射
      * key 通信参数名
      * value 值对应的setter方法名
      */
@@ -53,32 +50,32 @@ public final class UIParameterCollector {
     /**
      * 码元速率与单位
      */
-    private Double rb;
+    private Float rb;
     private String rbUnit;
     /**
      * 载波频率与单位
      */
-    private Double fc;
+    private Float fc;
     private String fcUnit;
     /**
      * 发射增益与单位
      */
-    private Double transmitGain;
+    private Float transmitGain;
     private String transmitGainUnit;
     /**
      * 接收增益与单位
      */
-    private Double receiveGain;
+    private Float receiveGain;
     private String receiveGainUnit;
     /**
      * 信号频偏与单位
      */
-    private Double frequenceOffset;
+    private Float frequenceOffset;
     private String frequenceOffsetUnit;
     /**
      * 跳频速率与单位
      */
-    private Double hop;
+    private Float hop;
     private String hopUnit;
     /**
      * 收发模式选择
@@ -96,11 +93,11 @@ public final class UIParameterCollector {
         this.mode = mode;
     }
 
-    public Double getRb() {
+    public Float getRb() {
         return rb;
     }
 
-    public void setRb(Double rb) {
+    public void setRb(Float rb) {
         this.rb = rb;
     }
 
@@ -112,11 +109,11 @@ public final class UIParameterCollector {
         this.rbUnit = rbUnit;
     }
 
-    public Double getFc() {
+    public Float getFc() {
         return fc;
     }
 
-    public void setFc(Double fc) {
+    public void setFc(Float fc) {
         this.fc = fc;
     }
 
@@ -128,11 +125,11 @@ public final class UIParameterCollector {
         this.fcUnit = fcUnit;
     }
 
-    public Double getTransmitGain() {
+    public Float getTransmitGain() {
         return transmitGain;
     }
 
-    public void setTransmitGain(Double transmitGain) {
+    public void setTransmitGain(Float transmitGain) {
         this.transmitGain = transmitGain;
     }
 
@@ -144,11 +141,11 @@ public final class UIParameterCollector {
         this.transmitGainUnit = transmitGainUnit;
     }
 
-    public Double getReceiveGain() {
+    public Float getReceiveGain() {
         return receiveGain;
     }
 
-    public void setReceiveGain(Double receiveGain) {
+    public void setReceiveGain(Float receiveGain) {
         this.receiveGain = receiveGain;
     }
 
@@ -160,11 +157,11 @@ public final class UIParameterCollector {
         this.receiveGainUnit = receiveGainUnit;
     }
 
-    public Double getFrequenceOffset() {
+    public Float getFrequenceOffset() {
         return frequenceOffset;
     }
 
-    public void setFrequenceOffset(Double frequenceOffset) {
+    public void setFrequenceOffset(Float frequenceOffset) {
         this.frequenceOffset = frequenceOffset;
     }
 
@@ -176,11 +173,11 @@ public final class UIParameterCollector {
         this.frequenceOffsetUnit = frequenceOffsetUnit;
     }
 
-    public Double getHop() {
+    public Float getHop() {
         return hop;
     }
 
-    public void setHop(Double hop) {
+    public void setHop(Float hop) {
         this.hop = hop;
     }
 
