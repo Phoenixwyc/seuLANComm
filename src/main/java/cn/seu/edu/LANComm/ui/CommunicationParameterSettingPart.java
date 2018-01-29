@@ -1,7 +1,6 @@
 package cn.seu.edu.LANComm.ui;
 
 import cn.seu.edu.LANComm.util.*;
-import org.omg.CORBA.PRIVATE_MEMBER;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -9,6 +8,8 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.List;
 
@@ -140,9 +141,22 @@ public class CommunicationParameterSettingPart {
                 comboBoxUnit.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        // TODO: 2018/1/28 增加单位选择数据传递
                         unit = (String) comboBoxUnit.getItemAt(comboBoxUnit.getSelectedIndex());
-                        System.out.println("参数传递部分 unit : " + unit);
+                        String unitSetMethodName = UIParameterCollector.getMethodNameMappingUnitSetter().get(parameterName.trim());
+                        // 这里就先反射调用吧~~~
+                        try {
+                            Class clazz = UIParameterCollector.class;
+                            Method method = clazz.getMethod(unitSetMethodName, String.class);
+                            method.invoke(collector, unit);
+                        } catch (NoSuchMethodException e1) {
+                            System.out.println(e1);
+                        } catch (InvocationTargetException e1) {
+                            System.out.println(e1);
+                        } catch (IllegalAccessException e1) {
+                            System.out.println(e1);
+                        } finally {
+                            // TODO: 2018/1/29 finally 处理 
+                        }
                     }
                 });
                 // 默认选择第一个
@@ -159,8 +173,21 @@ public class CommunicationParameterSettingPart {
                 comboBoxValue.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        // TODO: 2018/1/28 增加值选择参数传递
-                        System.out.println("参数传递部分 value : " + comboBoxValue.getItemAt(comboBoxValue.getSelectedIndex()));
+                        Double value = (Double) comboBoxValue.getItemAt(comboBoxValue.getSelectedIndex());
+                        String valueSetMethodName = UIParameterCollector.getMethodNameMappingValueSetter().get(parameterName.trim());
+                        try {
+                            Class clazz = UIParameterCollector.class;
+                            Method method = clazz.getMethod(valueSetMethodName, Double.class);
+                            method.invoke(collector, value);
+                        } catch (NoSuchMethodException e1) {
+                            System.out.println(e1);
+                        } catch (InvocationTargetException e1) {
+                            System.out.println(e1);
+                        } catch (IllegalAccessException e1) {
+                            System.out.println(e1);
+                        } finally {
+                            // TODO: 2018/1/29 finally处理 
+                        }
                     }
                 });
 
@@ -194,6 +221,7 @@ public class CommunicationParameterSettingPart {
 
     /**
      * 参数设置模式：先选数值，后选单位
+     * 注意：该部分代码没有写参数传递功能，禁用！！
      * @param parent 参数配置表所在的panel
      * @param propertyPath 配置文件位置
      * @param mode 工作模式 即DQPSK/DQPSK-DSSS等
@@ -275,7 +303,7 @@ public class CommunicationParameterSettingPart {
         JFrame frame = new JFrame();
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(createCommunicationParameterSettingPanel("DQPSK", "LANComm.proerties", collector));
+        frame.add(createCommunicationParameterSettingPanel("DQPSK-FH", "LANComm.proerties", collector));
         frame.pack();
     }
 

@@ -22,7 +22,6 @@ import java.util.List;
  */
 public class CommunicationModeSelectorAndParameterSettingPart {
     private static String selectedMode;
-    private static JPanel parameterSettingPart = new JPanel();
     /**
      * 主panel网格布局参数
      */
@@ -34,7 +33,7 @@ public class CommunicationModeSelectorAndParameterSettingPart {
     private static final int DEFAULT_PANEL_WIDTH = 200;
     private static final int DEFAULT_PANEL_HEIGHT = 300;
 
-    public static JPanel createCommunicationModeSelectorPanel(String propertyPath) {
+    public static JPanel createCommunicationModeSelectorAndParameterSettingPanel(String propertyPath, UIParameterCollector collector) {
         // 模式选择 + 参数设置的panel
         JPanel combinedPanel = new JPanel();
         combinedPanel.setBackground(Color.WHITE);
@@ -54,25 +53,27 @@ public class CommunicationModeSelectorAndParameterSettingPart {
             if (i == 0) {
                 JRadioButton radioButton = new JRadioButton(supportedModeName.get(i), true);
                 radioButton.setFont(FontEnum.RADIOBUTTOBN_FONT.getFont());
+                radioButton.setBackground(Color.WHITE);
                 radioButton.setActionCommand(supportedModeName.get(i));
                 selectedMode = radioButton.getActionCommand().trim();
-                radioButton.setBackground(Color.WHITE);
+                collector.setMode(selectedMode);
                 // 专门用于参数传输
                 radioButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        // TODO: 2018/1/28 增加工作模式选择参数传递
-                        System.out.println(radioButton.getText().trim() + " " + radioButton.getActionCommand());
+                        selectedMode = radioButton.getActionCommand().trim();
+                        collector.setMode(selectedMode);
                     }
                 });
-                // 专门用于参数更新
+                // 实现参数设置面板更新
                 radioButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         selectedMode = radioButton.getActionCommand().trim();
+                        collector.setMode(selectedMode);
                         combinedPanel.remove(1);
                         JPanel panelToUpdate = CommunicationParameterSettingPart.createCommunicationParameterSettingPanel(
-                                                                            selectedMode, propertyPath);
+                                                                            selectedMode, propertyPath, collector);
                         combinedPanel.add(panelToUpdate);
                         combinedPanel.paintAll(combinedPanel.getGraphics());
 
@@ -83,27 +84,25 @@ public class CommunicationModeSelectorAndParameterSettingPart {
             } else {
                 JRadioButton radioButton = new JRadioButton(supportedModeName.get(i), false);
                 radioButton.setFont(FontEnum.RADIOBUTTOBN_FONT.getFont());
-                radioButton.setActionCommand(supportedModeName.get(i));
-                selectedMode = radioButton.getActionCommand().trim();
                 radioButton.setBackground(Color.WHITE);
+                radioButton.setActionCommand(supportedModeName.get(i));
                 // 专门用于参数传输
                 radioButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        // TODO: 2018/1/28 增加工作模式选择参数传递
                         selectedMode = radioButton.getActionCommand().trim();
-                        parameterSettingPart.paint(parameterSettingPart.getGraphics());
-                        System.out.println(radioButton.getText().trim() + " " + radioButton.getActionCommand());
+                        collector.setMode(selectedMode);
                     }
                 });
-                // 专门用于参数设置panel的更新
+                // 用于参数设置panel的更新
                 radioButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         selectedMode = radioButton.getActionCommand().trim();
+                        collector.setMode(selectedMode);
                         combinedPanel.remove(1);
                         JPanel panelToUpdate = CommunicationParameterSettingPart.createCommunicationParameterSettingPanel(
-                                selectedMode, propertyPath);
+                                selectedMode, propertyPath, collector);
                         combinedPanel.add(panelToUpdate);
                         combinedPanel.paintAll(combinedPanel.getGraphics());
                     }
@@ -120,7 +119,7 @@ public class CommunicationModeSelectorAndParameterSettingPart {
         panel.setPreferredSize(new Dimension(DEFAULT_PANEL_WIDTH, DEFAULT_PANEL_HEIGHT));
 
         // 参数设置的panel
-        JPanel parameterSettingPanel = CommunicationParameterSettingPart.createCommunicationParameterSettingPanel(selectedMode, propertyPath);
+        JPanel parameterSettingPanel = CommunicationParameterSettingPart.createCommunicationParameterSettingPanel(selectedMode, propertyPath, collector);
         combinedPanel.add(panel);
         combinedPanel.add(parameterSettingPanel);
         return combinedPanel;
@@ -147,13 +146,11 @@ public class CommunicationModeSelectorAndParameterSettingPart {
     public static void main(String[] args) {
         JFrame frame = new JFrame();
 
-        frame.add(createCommunicationModeSelectorPanel("LANComm.proerties"));
+        UIParameterCollector collector = new UIParameterCollector();
+        frame.add(createCommunicationModeSelectorAndParameterSettingPanel("LANComm.proerties", collector));
         frame.setVisible(true);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public static void setParameterSettingPart(JPanel parameterSettingPart) {
-        CommunicationModeSelectorAndParameterSettingPart.parameterSettingPart = parameterSettingPart;
-    }
 }

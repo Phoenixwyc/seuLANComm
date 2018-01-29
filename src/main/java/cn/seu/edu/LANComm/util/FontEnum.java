@@ -22,8 +22,8 @@ public enum FontEnum {
     /**
      * 状态栏比较特殊，设置个性的主题字体
      */
-    STATUS_NORMAL_FONT(new Font("宋体", Font.BOLD, 15)),
-    STATUS_ABNORMAL_FONT(new Font("宋体", Font.BOLD, 15)),
+    STATUS_NORMAL_FONT(new Font("黑体", Font.BOLD, 15)),
+    STATUS_ABNORMAL_FONT(new Font("黑体", Font.BOLD, 15)),
     /**
      * 标签的字体
      */

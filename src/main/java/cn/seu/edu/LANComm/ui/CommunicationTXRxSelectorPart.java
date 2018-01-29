@@ -1,7 +1,6 @@
 package cn.seu.edu.LANComm.ui;
 
 import cn.seu.edu.LANComm.util.FontEnum;
-import javafx.beans.binding.FloatExpression;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -9,6 +8,8 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Administrator on 2018/1/27.
@@ -30,20 +31,24 @@ public class CommunicationTXRxSelectorPart {
     private static final int DEFAULT_PANEL_WIDTH = 150;
     private static final int DEFAULT_PANEL_HEIGHT = 300;
 
-    public static JPanel createCommunicationTXRxSelectorPanel() {
+    private static final String STATUS_PANEL = "StatusPanel";
+    private static final String CONFIRM_BUTTON = "ConfirmButton";
+
+
+    public static Map<String, Object> createCommunicationTXRxSelectorPanel(UIParameterCollector collector) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(DEFAULT_GRID_ROWS,DEFAULT_GRID_COLUMN));
 
         ButtonGroup buttonGroup = new ButtonGroup();
-        JRadioButton transmit = new JRadioButton(TRANSMIT_TEXT);
+        // 默认选择发送模式
+        JRadioButton transmit = new JRadioButton(TRANSMIT_TEXT, true);
+        collector.setSwitchTransmitAndReceive(TRANSMIT_TEXT);
         transmit.setBackground(Color.WHITE);
         transmit.setFont(FontEnum.RADIOBUTTOBN_FONT.getFont());
         transmit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO: 2018/1/28 发送控制
-
-                System.out.println("选择了： " + transmit.getText());
+                collector.setSwitchTransmitAndReceive(TRANSMIT_TEXT);
             }
         });
         buttonGroup.add(transmit);
@@ -58,8 +63,7 @@ public class CommunicationTXRxSelectorPart {
         receive.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO: 2018/1/28 接收控制
-                System.out.println("选择了：" + receive.getText());
+                collector.setSwitchTransmitAndReceive(RECEIVE_TEXT);
             }
         });
         buttonGroup.add(receive);
@@ -71,11 +75,12 @@ public class CommunicationTXRxSelectorPart {
         JPanel confirmPanel = new JPanel();
         JButton confirm = new JButton("确认");
         confirm.setFont(FontEnum.BUTTON_FONT.getFont());
+        collector.setConfirmButtonIsSelected(false);
         confirm.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO: 2018/1/28 确认事件处理
-                System.out.println("按下确认按钮");
+                collector.setConfirmButtonIsSelected(true);
+                System.out.println("确认按钮 " + collector);
             }
         });
         confirmPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
@@ -92,13 +97,26 @@ public class CommunicationTXRxSelectorPart {
         panel.setBorder(titledBorder);
         panel.setPreferredSize(new Dimension(DEFAULT_PANEL_WIDTH, DEFAULT_PANEL_HEIGHT));
         panel.setBackground(Color.WHITE);
-        return panel;
+        Map<String, Object> map = new HashMap<>();
+        map.put(STATUS_PANEL, panel);
+        map.put(CONFIRM_BUTTON, confirm);
+        return map;
+    }
+
+    public static String getStatusPanel() {
+        return STATUS_PANEL;
+    }
+
+    public static String getConfirmButton() {
+        return CONFIRM_BUTTON;
     }
 
     public static void main(String[] args) {
         JFrame frame = new JFrame();
+        UIParameterCollector collector = new UIParameterCollector();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(createCommunicationTXRxSelectorPanel());
+        Map<String, Object> map = createCommunicationTXRxSelectorPanel(collector);
+        frame.add((JPanel)map.get(STATUS_PANEL));
         frame.pack();
         frame.setVisible(true);
     }

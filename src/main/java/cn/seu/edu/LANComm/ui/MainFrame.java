@@ -1,11 +1,13 @@
 package cn.seu.edu.LANComm.ui;
 
-
 import javax.swing.*;
 import java.awt.*;
+import java.util.Map;
 
 /**
  * Created by Administrator on 2018/1/26.
+ * @author WYCPhoenix
+ * @date 2018-1-29-15:46
  */
 public class MainFrame {
 
@@ -15,13 +17,21 @@ public class MainFrame {
             public void run() {
                 FrameSet frameSet = new FrameSet("实时数据显示");
                 frameSet.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frameSet.setBitErrorRateTextFieldString("0.000001");
+                frameSet.setNormalStatus();
                 frameSet.setVisible(true);
+                System.out.println("主界面 " + frameSet.getUIParameterCollector());
             }
         });
     }
 }
 
 class FrameSet extends JFrame {
+    UIParameterCollector collector = new UIParameterCollector();
+    private JRadioButton normalStatusRadioButton;
+    private JRadioButton abnormalStatusRadioButton;
+    private JTextField bitErrorRateTextField;
+    private JButton confirmButton;
 
     /**
      * 设置最优尺寸
@@ -45,12 +55,64 @@ class FrameSet extends JFrame {
         super.setLayout(new FlowLayout());
 
         // 通信模式选择部分
-        super.add(CommunicationModeSelectorAndParameterSettingPart.createCommunicationModeSelectorPanel("LANComm.proerties"));
+        super.add(CommunicationModeSelectorAndParameterSettingPart.createCommunicationModeSelectorAndParameterSettingPanel("LANComm.proerties", collector));
+
         // 通信状态部分
-        super.add(CommunicationStatusPart.createStatusPanel());
-        // 通信收发确认
-        super.add(CommunicationTXRxSelectorPart.createCommunicationTXRxSelectorPanel());
+        Map<String, Object> statusPanel = CommunicationStatusPart.createStatusPanel();
+        super.add((JPanel)statusPanel.get(CommunicationStatusPart.getPanelKey()));
+        normalStatusRadioButton = (JRadioButton) statusPanel.get(CommunicationStatusPart.getNormalStatusKey());
+        abnormalStatusRadioButton = (JRadioButton) statusPanel.get(CommunicationStatusPart.getAbnormalStatusKey());
+        bitErrorRateTextField = (JTextField) statusPanel.get(CommunicationStatusPart.getBitErrorRateTextKey());
+
+        // 通信收发确认部分
+        Map<String, Object> txRxSelectorPart = CommunicationTXRxSelectorPart.createCommunicationTXRxSelectorPanel(collector);
+        super.add((JPanel)txRxSelectorPart.get(CommunicationTXRxSelectorPart.getStatusPanel()));
+        confirmButton = (JButton) txRxSelectorPart.get(CommunicationTXRxSelectorPart.getConfirmButton());
         super.pack();
     }
 
+    /**
+     * 通信参数收集器
+     * note：仅用于调用getter方法，禁止使用setter方法
+     * @return 通信参数设置汇总
+     */
+    public UIParameterCollector getUIParameterCollector() {
+        return collector;
+    }
+
+    /**
+     *  系统正常状态
+     */
+    public void setNormalStatus() {
+        normalStatusRadioButton.setForeground(Color.BLUE);
+        normalStatusRadioButton.setBackground(Color.GREEN);
+        normalStatusRadioButton.setSelected(true);
+        // 重置故障状态
+        abnormalStatusRadioButton.setForeground(Color.BLACK);
+        abnormalStatusRadioButton.setBackground(Color.WHITE);
+    }
+
+    /**
+     * 系统关故障状态
+     */
+    public void setAbnormalStatus() {
+        abnormalStatusRadioButton.setSelected(true);
+        abnormalStatusRadioButton.setBackground(Color.RED);
+        abnormalStatusRadioButton.setForeground(Color.ORANGE);
+        // 重置正常状态
+        normalStatusRadioButton.setBackground(Color.WHITE);
+        normalStatusRadioButton.setForeground(Color.BLACK);
+    }
+
+    /**
+     * 设置误码率数值
+     * @param bitErrorRate 误码率，字符串
+     */
+    public void setBitErrorRateTextFieldString(String bitErrorRate) {
+        if (bitErrorRate == null) {
+            bitErrorRateTextField.setText("-1");
+        }
+        bitErrorRateTextField.setText(bitErrorRate);
+
+    }
 }

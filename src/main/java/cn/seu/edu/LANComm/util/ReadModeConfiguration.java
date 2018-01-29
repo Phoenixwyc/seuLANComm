@@ -81,4 +81,6 @@ public class ReadModeConfiguration {
         }
         return configuration;
     }
+
+    // TODO: 2018/1/29 增加配置文件正确性校验 
 }

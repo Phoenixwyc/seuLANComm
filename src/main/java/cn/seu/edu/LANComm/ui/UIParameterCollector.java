@@ -1,5 +1,10 @@
 package cn.seu.edu.LANComm.ui;
 
+import cn.seu.edu.LANComm.util.CommunicationParameterEnum;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 收集所有组件中被选择的值
  * 这里采用一种比较危险的方式实现
@@ -9,6 +14,38 @@ package cn.seu.edu.LANComm.ui;
  * @date 2018-1-28-14:58
  */
 public final class UIParameterCollector {
+    /**
+     * 增加一个field与对应method的映射关系
+     * 便于后序方法调用
+     * key 通信参数名
+     * value 值对应的setter方法名
+     */
+    private static  final Map<String, String> methodNameMappingValueSetter = new HashMap<>();
+    static {
+        methodNameMappingValueSetter.put(CommunicationParameterEnum.PARAMETER_FC.getCommunicationParameter(), "setFc");
+        methodNameMappingValueSetter.put(CommunicationParameterEnum.PARAMETER_FH_HOP.getCommunicationParameter(), "setHop");
+        methodNameMappingValueSetter.put(CommunicationParameterEnum.PARAMETER_FREQUENCE_OFFSET.getCommunicationParameter(), "setFrequenceOffset");
+        methodNameMappingValueSetter.put(CommunicationParameterEnum.PARAMETER_RECEIVE_GAIN.getCommunicationParameter(), "setReceiveGain");
+        methodNameMappingValueSetter.put(CommunicationParameterEnum.PARAMETER_TRANSMIT_GAIN.getCommunicationParameter(), "setTransmitGain");
+        methodNameMappingValueSetter.put(CommunicationParameterEnum.PARAMETER_RB.getCommunicationParameter(), "setRb");
+
+    }
+    /**
+     * 增加一个field与对应method的映射关系
+     * 便于后序方法调用
+     * key 通信参数名
+     * value 单位对应的setter方法名
+     */
+    private static final Map<String, String> methodNameMappingUnitSetter = new HashMap<>();
+    static {
+        methodNameMappingUnitSetter.put(CommunicationParameterEnum.PARAMETER_FC.getCommunicationParameter(), "setFcUnit");
+        methodNameMappingUnitSetter.put(CommunicationParameterEnum.PARAMETER_FH_HOP.getCommunicationParameter(), "setHopUnit");
+        methodNameMappingUnitSetter.put(CommunicationParameterEnum.PARAMETER_FREQUENCE_OFFSET.getCommunicationParameter(), "setFrequenceOffsetUnit");
+        methodNameMappingUnitSetter.put(CommunicationParameterEnum.PARAMETER_RECEIVE_GAIN.getCommunicationParameter(), "setReceiveGainUnit");
+        methodNameMappingUnitSetter.put(CommunicationParameterEnum.PARAMETER_TRANSMIT_GAIN.getCommunicationParameter(), "setTransmitGainUnit");
+        methodNameMappingUnitSetter.put(CommunicationParameterEnum.PARAMETER_RB.getCommunicationParameter(), "setRbUnit");
+
+    }
     /**
      * 通信模式
      */
@@ -43,6 +80,11 @@ public final class UIParameterCollector {
      */
     private Double hop;
     private String hopUnit;
+    /**
+     * 收发模式选择
+     */
+    private String switchTransmitAndReceive;
+    private boolean confirmButtonIsSelected;
 
     public UIParameterCollector() {}
 
@@ -150,6 +192,30 @@ public final class UIParameterCollector {
         this.hopUnit = hopUnit;
     }
 
+    public static Map<String, String> getMethodNameMappingUnitSetter() {
+        return methodNameMappingUnitSetter;
+    }
+
+    public static Map<String, String> getMethodNameMappingValueSetter() {
+        return methodNameMappingValueSetter;
+    }
+
+    public String getSwitchTransmitAndReceive() {
+        return switchTransmitAndReceive;
+    }
+
+    public void setSwitchTransmitAndReceive(String switchTransmitAndReceive) {
+        this.switchTransmitAndReceive = switchTransmitAndReceive;
+    }
+
+    public boolean isConfirmButtonIsSelected() {
+        return confirmButtonIsSelected;
+    }
+
+    public void setConfirmButtonIsSelected(boolean confirmButtonIsSelected) {
+        this.confirmButtonIsSelected = confirmButtonIsSelected;
+    }
+
     @Override
     public String toString() {
         return "UIParameterCollector{" +
@@ -166,7 +232,8 @@ public final class UIParameterCollector {
                 ", frequenceOffsetUnit='" + frequenceOffsetUnit + '\'' +
                 ", hop=" + hop +
                 ", hopUnit='" + hopUnit + '\'' +
+                ", switchTransmitAndReceive='" + switchTransmitAndReceive + '\'' +
+                ", confirmButtonIsSelected=" + confirmButtonIsSelected +
                 '}';
     }
-
 }
