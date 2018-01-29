@@ -1,16 +1,21 @@
 package cn.seu.edu.LANComm.ui;
 
 import cn.seu.edu.LANComm.util.FontEnum;
-import org.omg.CORBA.PRIVATE_MEMBER;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.*;
-import java.util.List;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Administrator on 2018/1/27.
