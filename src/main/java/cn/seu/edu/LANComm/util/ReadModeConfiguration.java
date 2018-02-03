@@ -7,7 +7,11 @@ package cn.seu.edu.LANComm.util;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * 为获得配置上的灵活性，工作模式、参数设置部分的信息，

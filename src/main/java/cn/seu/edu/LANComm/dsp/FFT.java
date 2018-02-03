@@ -25,7 +25,9 @@ public class FFT {
         int N = x.length;
 
         // base case
-        if (N == 1) return new Complex[] { x[0] };
+        if (N == 1){
+            return new Complex[] { x[0] };
+        }
 
         if (N % 2 != 0) { throw new RuntimeException("N is not a power of 2"); }
 

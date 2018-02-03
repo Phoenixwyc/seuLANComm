@@ -43,7 +43,17 @@ public enum FontEnum {
     /**
      * 按钮字体
      */
-    BUTTON_FONT(new Font("宋体", Font.PLAIN, 15));
+    BUTTON_FONT(new Font("宋体", Font.PLAIN, 15)),
+
+    /**
+     * chart 标题字体
+     */
+    CHART_TITLE_FONT(new Font("宋体", Font.BOLD, 15)),
+    /**
+     * chart XY轴标签字体
+     */
+    CHART_XYLABEL_FONT(new Font("宋体", Font.PLAIN, 15));
+
     private Font font;
 
     private FontEnum(Font font) {

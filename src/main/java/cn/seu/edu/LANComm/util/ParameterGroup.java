@@ -1,8 +1,12 @@
 package cn.seu.edu.LANComm.util;
 
-import sun.dc.pr.PRError;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 对 LANComm.properties 中的参数配置进行分组
