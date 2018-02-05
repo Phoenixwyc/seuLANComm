@@ -1,9 +1,12 @@
 package cn.seu.edu.LANComm.communication.util;
 
+import jpcap.JpcapCaptor;
 import jpcap.JpcapSender;
+import jpcap.NetworkInterface;
 import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +60,7 @@ public class Producer implements Runnable{
      * @param data 数据段， 大于 46 byte 且小于1400 byte
      * @param sender jpcap发送实例
      */
-    private void sendData(byte[]destMAC, byte[] srcMAC, byte[] frameType, byte[] data, JpcapSender sender) {
+    private static void sendData(byte[] frameType, byte[]destMAC, byte[] srcMAC, byte[] data, JpcapSender sender) {
         if (!checkData(destMAC, srcMAC, frameType, data, sender)) {
             System.out.println("参数不合理");
         }
@@ -82,7 +85,7 @@ public class Producer implements Runnable{
      * @param sender
      * @return
      */
-    private boolean checkData(byte[]destMAC, byte[] srcMAC, byte[] frameType, byte[] data, JpcapSender sender) {
+    private static boolean checkData(byte[]destMAC, byte[] srcMAC, byte[] frameType, byte[] data, JpcapSender sender) {
         if (destMAC.length != 6) {
             return false;
         }

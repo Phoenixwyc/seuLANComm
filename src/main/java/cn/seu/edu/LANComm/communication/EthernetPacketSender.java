@@ -1,42 +1,13 @@
 package cn.seu.edu.LANComm.communication;
 
-import cn.seu.edu.LANComm.communication.util.MACStringConvertor;
-import jpcap.JpcapCaptor;
 import jpcap.JpcapSender;
-import jpcap.NetworkInterface;
 import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
 
-import java.io.IOException;
-
 /**
- * Created by Administrator on 2018/1/30.
+ * Created by Administrator on 2018/1/29.
  */
-public class TestSend {
-    public static void main(String[] args) throws Exception{
-        String destMAC = "00-0C-29-1E-AA-3F";
-        String srcMAC = "00-23-24-B0-96-A7";
-        byte[] dest = MACStringConvertor.stringToMAC(destMAC);
-        byte[] src = MACStringConvertor.stringToMAC(srcMAC);
-        short frameType = (short) 8511;
-        byte[] data = new byte[60];
-        for (int i = 0; i < data.length; i++) {
-            data[i] = (byte) 0;
-        }
-        NetworkInterface[] devices = JpcapCaptor.getDeviceList();
-        JpcapSender sender = null;
-        try {
-            sender = JpcapSender.openDevice(devices[0]);
-            while (true) {
-                sendData(frameType, dest, src, data, sender);
-                Thread.sleep(1000);
-                System.out.println("发送数据");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
+public class EthernetPacketSender {
     /**
      * 发送MAC帧
      * @param destMAC 目的MAC地址 6 byte

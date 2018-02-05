@@ -25,7 +25,6 @@ public final class UIParameterCollector {
         methodNameMappingValueSetter.put(CommunicationParameterEnum.PARAMETER_RECEIVE_GAIN.getCommunicationParameter(), "setReceiveGain");
         methodNameMappingValueSetter.put(CommunicationParameterEnum.PARAMETER_TRANSMIT_GAIN.getCommunicationParameter(), "setTransmitGain");
         methodNameMappingValueSetter.put(CommunicationParameterEnum.PARAMETER_RB.getCommunicationParameter(), "setRb");
-
     }
     /**
      * 增加一个field与对应method的映射关系
@@ -41,7 +40,6 @@ public final class UIParameterCollector {
         methodNameMappingUnitSetter.put(CommunicationParameterEnum.PARAMETER_RECEIVE_GAIN.getCommunicationParameter(), "setReceiveGainUnit");
         methodNameMappingUnitSetter.put(CommunicationParameterEnum.PARAMETER_TRANSMIT_GAIN.getCommunicationParameter(), "setTransmitGainUnit");
         methodNameMappingUnitSetter.put(CommunicationParameterEnum.PARAMETER_RB.getCommunicationParameter(), "setRbUnit");
-
     }
     /**
      * 通信模式
@@ -82,6 +80,13 @@ public final class UIParameterCollector {
      */
     private String switchTransmitAndReceive;
     private boolean confirmButtonIsSelected;
+
+    /**
+     * MAC地址
+     */
+    private String TxMAC;
+    private String RxMAC;
+    private String LocalMAC;
 
     public UIParameterCollector() {}
 
@@ -213,6 +218,30 @@ public final class UIParameterCollector {
         this.confirmButtonIsSelected = confirmButtonIsSelected;
     }
 
+    public String getTxMAC() {
+        return TxMAC;
+    }
+
+    public void setTxMAC(String txMAC) {
+        TxMAC = txMAC;
+    }
+
+    public String getRxMAC() {
+        return RxMAC;
+    }
+
+    public void setRxMAC(String rxMAC) {
+        RxMAC = rxMAC;
+    }
+
+    public String getLocalMAC() {
+        return LocalMAC;
+    }
+
+    public void setLocalMAC(String localMAC) {
+        LocalMAC = localMAC;
+    }
+
     @Override
     public String toString() {
         return "UIParameterCollector{" +
@@ -231,6 +260,9 @@ public final class UIParameterCollector {
                 ", hopUnit='" + hopUnit + '\'' +
                 ", switchTransmitAndReceive='" + switchTransmitAndReceive + '\'' +
                 ", confirmButtonIsSelected=" + confirmButtonIsSelected +
+                ", TxMAC='" + TxMAC + '\'' +
+                ", RxMAC='" + RxMAC + '\'' +
+                ", LocalMAC='" + LocalMAC + '\'' +
                 '}';
     }
 }

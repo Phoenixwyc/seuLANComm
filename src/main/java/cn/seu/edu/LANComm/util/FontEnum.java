@@ -31,7 +31,7 @@ public enum FontEnum {
     /**
      * 下拉菜单中元素的字体
      */
-    COMBOBOX_ITEM_FONT(new Font("宋体", Font.PLAIN, 15)),
+    COMBOBOX_ITEM_FONT(new Font("宋体", Font.BOLD, 15)),
     /**
      * 复选框文字的字体
      */

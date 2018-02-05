@@ -58,7 +58,7 @@ class FrameSet extends JFrame {
         // 主窗口大小可调
         super.setResizable(true);
         // ICON
-        Image mainFrameIcon = new ImageIcon("src/main/resources/MainIcon.jpg").getImage();
+        Image mainFrameIcon = new ImageIcon("MainIcon.jpg").getImage();
         super.setIconImage(mainFrameIcon);
         super.setLayout(new FlowLayout());
 

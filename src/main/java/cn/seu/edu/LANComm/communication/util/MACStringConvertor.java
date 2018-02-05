@@ -38,10 +38,7 @@ public class MACStringConvertor {
      * @return
      */
     public static byte[] stringToMAC(String macString) {
-        String macPattern = "([A-Fa-f0-9]{2}-){5}[A-Fa-f0-9]{2}";
-        Pattern pattern = Pattern.compile(macPattern);
-        Matcher matcher = pattern.matcher(macString);
-        if (!matcher.matches()) {
+        if (!checkMAC(macString)) {
             return null;
         }
         byte[] mac = new byte[6];
@@ -50,5 +47,18 @@ public class MACStringConvertor {
             mac[i] = (byte) Integer.parseInt(macPartition[i], 16);
         }
         return mac;
+    }
+
+    /**
+     * 校验MAC地址的合法性，
+     * 标砖MAC表示：XX-XX-XX-XX-XX-XX
+     * @param macString 待校验的MAC
+     * @return
+     */
+    public static boolean checkMAC(String macString) {
+        String macPattern = "([A-Fa-f0-9]{2}-){5}[A-Fa-f0-9]{2}";
+        Pattern pattern = Pattern.compile(macPattern);
+        Matcher matcher = pattern.matcher(macString);
+        return matcher.matches();
     }
 }
