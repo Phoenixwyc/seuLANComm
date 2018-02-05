@@ -11,28 +11,43 @@ public enum CommunicationModeEnum {
     /**
      * DQPSK模式
      */
-    DQOSK_MODE("DQPSK"),
+    DQOSK_MODE("DQPSK", 1, "DPQSK调制模式"),
     /**
      * DQPSK-DSSS模式
      */
-    DQOSK_DSSS_MODE("DQPSK-DSSS"),
+    DQOSK_DSSS_MODE("DQPSK-DSSS", 2, "DPQSK-DSSS模式"),
     /**
      * DQPSK-FH模式
      */
-    DQOSK_FH_MODE("DQPSK-FH");
+    DQOSK_FH_MODE("DQPSK-FH", 3, "DQPSK-FH模式");
     private String communicationMode;
-    CommunicationModeEnum(String communicationMode) {
+    private int modeCode;
+    private String description;
+
+    CommunicationModeEnum(String communicationMode, int modeCode, String description) {
         this.communicationMode = communicationMode;
+        this.modeCode = modeCode;
+        this.description = description;
     }
 
     public String getCommunicationMode() {
-        return this.communicationMode;
+        return communicationMode;
+    }
+
+    public int getModeCode() {
+        return modeCode;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     @Override
     public String toString() {
         return "CommunicationModeEnum{" +
                 "communicationMode='" + communicationMode + '\'' +
+                ", modeCode=" + modeCode +
+                ", description='" + description + '\'' +
                 '}';
     }
 }
