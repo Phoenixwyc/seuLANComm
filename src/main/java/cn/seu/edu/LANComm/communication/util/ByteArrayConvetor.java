@@ -1,6 +1,5 @@
 package cn.seu.edu.LANComm.communication.util;
 
-import com.sun.org.apache.regexp.internal.RE;
 
 /**
  * 使用大端原则，实现java的基本类型与byte数组之间的转换

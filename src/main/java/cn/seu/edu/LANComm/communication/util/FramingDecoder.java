@@ -52,12 +52,13 @@ public class FramingDecoder {
     public float[] getTransmittedData() {
         float[] data = new float[getDataLen()];
         int index = 0;
-        byte[] dataToDeode = new byte[getDataLen() * 4];
-        for (int i = 2; i < dataReceived.length; i++) {
-            dataToDeode[i-2] = dataReceived[i];
+        byte[] dataToDecode = new byte[getDataLen() * 4];
+        // 注意这里偏移2个字节，接收字节数组的前两个字节不算在内
+        for (int i = 2; i < dataToDecode.length + 2; i++) {
+            dataToDecode[i-2] = dataReceived[i];
         }
-        while (index < dataToDeode.length) {
-            data[index / 4] = ByteArrayConvetor.byteArrayToFloat(dataToDeode,index);
+        while (index < dataToDecode.length) {
+            data[index / 4] = ByteArrayConvetor.byteArrayToFloat(dataToDecode,index);
             index = index + 4;
 
         }

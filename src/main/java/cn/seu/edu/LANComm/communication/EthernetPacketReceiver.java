@@ -6,3 +6,4 @@ package cn.seu.edu.LANComm.communication;
 public class EthernetPacketReceiver {
 
 }
+
