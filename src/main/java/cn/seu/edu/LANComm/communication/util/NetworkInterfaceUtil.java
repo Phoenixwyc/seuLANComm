@@ -20,4 +20,24 @@ public class NetworkInterfaceUtil {
         }
         return macStrings;
     }
+
+    /**
+     * 根据指定的MAC地址，返回对应的设备
+     * @param MACString 字符串形式的MAC地址
+     * @return 对应的本地设备
+     */
+    public static NetworkInterface getDesignateDeviceByMACString(String MACString) {
+        if (!MACStringConvertor.checkMAC(MACString)) {
+            return null;
+        }
+        NetworkInterface res = null;
+        NetworkInterface[] devices = JpcapCaptor.getDeviceList();
+        for (NetworkInterface device : devices) {
+            if (MACStringConvertor.macToString(device.mac_address).equals(MACString)) {
+                res = device;
+                break;
+            }
+        }
+        return res;
+    }
 }

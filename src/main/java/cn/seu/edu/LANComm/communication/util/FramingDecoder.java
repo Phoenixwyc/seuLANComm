@@ -45,7 +45,8 @@ public class FramingDecoder {
     }
 
     public int getDataLen() {
-        int dataLen = dataReceived[1];
+        // 注意java的byte是有符号的，需要转为无符号数
+        int dataLen = dataReceived[1] & 0XFF;
         return dataLen;
     }
 

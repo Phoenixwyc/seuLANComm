@@ -16,7 +16,10 @@ public enum DataLinkParameterEnum {
     PARAMETER_SETTING("1", "通信参数配置数据，float类型"),
     CONSTELLATION_DATA("2", "星座图数据数据，float类型"),
     INTERMEDIATE_DATA("3", "中频时域信号数据，float类型"),
-    HOPPING_PATTERN_DATA("4", "跳频图案数据，float类型");
+    HOPPING_PATTERN_DATA("4", "跳频图案数据，float类型"),
+    TRANSMITTED_SYMBOL_DATA("5", "发送的符号，float类型"),
+    RECEIVED_SYMBOL_DATA("6", "接收的符号，float类型"),
+    SAMPLE_RATE("7", "中频采样率，float类型");
 
 
     /**

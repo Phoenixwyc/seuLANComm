@@ -48,11 +48,11 @@ public enum FontEnum {
     /**
      * chart 标题字体
      */
-    CHART_TITLE_FONT(new Font("宋体", Font.BOLD, 15)),
+    CHART_TITLE_FONT(new Font("宋体", Font.BOLD, 10)),
     /**
      * chart XY轴标签字体
      */
-    CHART_XYLABEL_FONT(new Font("宋体", Font.PLAIN, 15));
+    CHART_XYLABEL_FONT(new Font("宋体", Font.PLAIN, 10));
 
     private Font font;
 

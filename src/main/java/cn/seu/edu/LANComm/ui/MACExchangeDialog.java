@@ -4,6 +4,8 @@ import cn.seu.edu.LANComm.communication.util.MACStringConvertor;
 import cn.seu.edu.LANComm.communication.util.NetworkInterfaceUtil;
 import cn.seu.edu.LANComm.util.ExtendStringToSameLength;
 import cn.seu.edu.LANComm.util.FontEnum;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
+import sun.awt.geom.AreaOp;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -12,23 +14,27 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Created by Administrator on 2018/2/4.
  */
 public class MACExchangeDialog {
+    private static final String MAC_PROPERTIES = "MAC.properties";
+    private static final String TX_MAC_KEY = "TxMAC";
+    private static final String RX_MAC_KEY = "RxMAC";
     private static final String TXMAC_LABEL = "发端方 MAC";
     private static final String RXMAX_LABEL = "接收方 MAC";
     private static final String LOCAL_MAC_LABEL = "上位机 MAC";
@@ -37,6 +43,10 @@ public class MACExchangeDialog {
     private static final String MAINFRAME_TITLE = "MAC输入提示";
     private static final int DEFAULT_WIDTH = 350;
     private static final int DEFAULT_HEIGHT = 170;
+    private static Properties properties;
+    static {
+        properties = readMACPropertiesFile(MAC_PROPERTIES);
+    }
 
     public static void showDialog(UIParameterCollector collector) {
         // 字符串转为相同长度
@@ -63,13 +73,14 @@ public class MACExchangeDialog {
         Tx.setBackground(Color.WHITE);
         Tx.setFont(FontEnum.LABEL_FONT.getFont());
         JTextField TxText = new JTextField(20);
+        TxText.setText(properties.getProperty(TX_MAC_KEY));
         TxText.setBackground(Color.WHITE);
         TxText.setFont(FontEnum.TEXTFIELD_FONT.getFont());
         TxText.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
                 if (!MACStringConvertor.checkMAC(TxText.getText().trim().toUpperCase())) {
-                    showErrorDialog("发射端MAC地址输入错误\n" + MAC_TIPS);
+                    showErrorDialog(mainFrame, "发送端MAC地址输入错误\n" + MAC_TIPS);
                 }
             }
         });
@@ -84,13 +95,14 @@ public class MACExchangeDialog {
         Rx.setBackground(Color.WHITE);
         Rx.setFont(FontEnum.LABEL_FONT.getFont());
         JTextField RxText = new JTextField(20);
+        RxText.setText(properties.getProperty(RX_MAC_KEY));
         RxText.setBackground(Color.WHITE);
         RxText.setFont(FontEnum.TEXTFIELD_FONT.getFont());
         RxText.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
                 if (!MACStringConvertor.checkMAC(RxText.getText().trim().toUpperCase())) {
-                    showErrorDialog("接收端MAC地址输入错误\n" + MAC_TIPS);
+                    showErrorDialog(mainFrame, "接收端MAC地址输入错误\n" + MAC_TIPS);
                 }
             }
         });
@@ -137,11 +149,38 @@ public class MACExchangeDialog {
                     collector.setTxMAC(TxMACString);
                     collector.setRxMAC(RxMACString);
                     collector.setLocalMAC(localMACList.getItemAt(localMACList.getSelectedIndex()));
+
+                    // 将新的MAC地址写入文件
+                    FileWriter writer = null;
+                    try {
+                        // 设置新的值
+                        properties.clear();
+                        properties.setProperty(TX_MAC_KEY, TxMACString);
+                        properties.setProperty(RX_MAC_KEY, RxMACString);
+                        File file  = new File(ClassLoader.getSystemResource(MAC_PROPERTIES).getPath());
+                        writer = new FileWriter(file);
+
+                        SimpleDateFormat format = new SimpleDateFormat ("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
+                        String date = format.format(new Date());
+                        properties.store(writer, date);
+                        System.out.println("新的Pr" + properties);
+                    }catch (IOException ex) {
+
+                    } finally {
+                        if (writer != null) {
+                            try {
+                                writer.flush();
+                                writer.close();
+                            } catch (IOException ex) {
+                                // do nothing
+                            }
+                        }
+                    }
                     // TODO: 2018/2/5 增加MAC地址的连接测试功能，保证MAC设置是可靠的
                     mainFrame.dispose();
                     System.out.println(collector);
                 }else {
-                    showErrorDialog("MAC参数设置错误");
+                    showErrorDialog(mainFrame, "MAC参数设置错误");
                 }
             }
         });
@@ -159,6 +198,7 @@ public class MACExchangeDialog {
         mainFrame.add(mainPanel);
         mainFrame.setTitle(MAINFRAME_TITLE);
         mainFrame.setVisible(true);
+        mainFrame.setAlwaysOnTop(true);
         mainFrame.pack();
         mainFrame.setResizable(false);
         mainFrame.setLocationRelativeTo(null);
@@ -171,12 +211,25 @@ public class MACExchangeDialog {
         });
     }
 
-    private static void showErrorDialog(String errorMessage) {
-        JOptionPane.showMessageDialog(null, errorMessage,"错误", JOptionPane.ERROR_MESSAGE);
+    private static void showErrorDialog(Component parentComponent, String errorMessage) {
+        JOptionPane.showMessageDialog(parentComponent, errorMessage,"错误", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private static Properties readMACPropertiesFile(String filePath) {
+        Properties properties = new Properties();
+        InputStream inputStream = ClassLoader.getSystemResourceAsStream(filePath);
+        try{
+            properties.load(inputStream);
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+        return properties;
     }
 
     public static void main(String[] args) {
         UIParameterCollector collector = new UIParameterCollector();
         MACExchangeDialog.showDialog(collector);
+
+        System.out.println(properties);
     }
 }

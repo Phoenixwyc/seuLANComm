@@ -29,7 +29,7 @@ DQPSK-DSSS-Frequence-Offset = [1-Hz, 2-Hz, 3-kHz]
 DQPSK-FH-Rb = [100-kbps, 1-Mbps, 10-Mbps]
 DQPSK-FH-Fc = [1-kHz, 1-MHz, 2-MHz, 10-GHz]
 # 跳频图案跳变速率表
-DQPSK-FH-Hop = [100-Hops, 1-KHpos]
+DQPSK-FH-Hop = [100-Hops, 1-kHops]
 DQPSK-FH-Transmit-Gain = [1-dBm, 2-dBm, 3-dBm, 10-dBm]
 DQPSK-FH-Receive-Gain = [1-dBm, 2-dBm, 3-dBm, 10-dBm]
 DQPSK-FH-Frequence-Offset = [1-Hz, 2-Hz, 3-kHz]

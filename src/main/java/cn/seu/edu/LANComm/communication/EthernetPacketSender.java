@@ -1,15 +1,14 @@
 package cn.seu.edu.LANComm.communication;
 
-import cn.seu.edu.LANComm.communication.util.DataLinkParameterEnum;
-import cn.seu.edu.LANComm.communication.util.FramingEncoder;
-import cn.seu.edu.LANComm.communication.util.MACStringConvertor;
-import jpcap.JpcapCaptor;
+import cn.seu.edu.LANComm.communication.util.*;
 import jpcap.JpcapSender;
 import jpcap.NetworkInterface;
 import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
 
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Iterator;
 
 /**
  * Created by Administrator on 2018/1/29.
@@ -86,45 +85,40 @@ public class EthernetPacketSender {
      * @param data 待发送的消息
      */
     public static void sendEthernetPacket(String[] receiverMACs, String localMAC, DataLinkParameterEnum dataLinkParameterEnum, float[] data) {
-        // 获取本地设备，其MAC地址 = localMAC
-        NetworkInterface[] devices = JpcapCaptor.getDeviceList();
-        NetworkInterface deviceUsed =  null;
-        JpcapSender sender = null;
-        for (NetworkInterface device : devices) {
-            String macString = MACStringConvertor.macToString(device.mac_address);
-            if (macString.equals(localMAC)) {
-                deviceUsed = device;
-                break;
+        NetworkInterface deviceUsed = NetworkInterfaceUtil.getDesignateDeviceByMACString(localMAC);
+        if (deviceUsed != null) {
+            JpcapSender sender = null;
+            try {
+                sender = JpcapSender.openDevice(deviceUsed);
+            } catch (IOException e) {
+                // TODO: 2018/2/24 增加端口打开异常处理
+            } finally {
+                // TODO: 2018/2/24 资源回收
             }
-        }
-        try {
-            sender = JpcapSender.openDevice(deviceUsed);
-        } catch (IOException e) {
-            // TODO: 2018/2/5 增加端口打开异常的处理
-        } finally {
-            // TODO: 2018/2/5 资源回收
-        }
-        // float数组转为字节数组
-        byte[] dataBytes = FramingEncoder.getByteToSend(dataLinkParameterEnum, data);
-        // 检查dataBytes长度，长度不足 MINIUM_BYTES 的填充0
-        byte[] bytesToSend = null;
-        if (dataBytes.length < MINIUM_BYTES) {
-            bytesToSend = new byte[MINIUM_BYTES];
-            for (int i = 0; i < MINIUM_BYTES; i++) {
-                if (i < dataBytes.length) {
-                    bytesToSend[i] = dataBytes[i];
-                } else {
-                    bytesToSend[i] = 0;
+            // float数组转为字节数组
+            byte[] dataBytes = FramingEncoder.getByteToSend(dataLinkParameterEnum, data);
+            // 检查dataBytes长度，长度不足 MINIUM_BYTES 的填充0
+            byte[] bytesToSend = null;
+            if (dataBytes.length < MINIUM_BYTES) {
+                bytesToSend = new byte[MINIUM_BYTES];
+                for (int i = 0; i < MINIUM_BYTES; i++) {
+                    if (i < dataBytes.length) {
+                        bytesToSend[i] = dataBytes[i];
+                    } else {
+                        bytesToSend[i] = 0;
+                    }
                 }
+            } else {
+                bytesToSend = dataBytes;
+            }
+            byte[] srcMAC = MACStringConvertor.stringToMAC(localMAC);
+            // 向所有指定MAC发送数据帧
+            for (String MAC : receiverMACs) {
+                byte[] desMAC = MACStringConvertor.stringToMAC(MAC);
+                sendData(FRAME_TYPE, desMAC, srcMAC, bytesToSend, sender);
             }
         } else {
-            bytesToSend = dataBytes;
-        }
-        byte[] srcMAC = MACStringConvertor.stringToMAC(localMAC);
-        // 向所有指定MAC发送数据帧
-        for (String MAC : receiverMACs) {
-            byte[] desMAC = MACStringConvertor.stringToMAC(MAC);
-            sendData(FRAME_TYPE, desMAC, srcMAC, bytesToSend, sender);
+            // TODO: 2018/2/24 端口错误提示
         }
     }
 
@@ -137,5 +131,24 @@ public class EthernetPacketSender {
         DataLinkParameterEnum dataLinkParameterEnum = DataLinkParameterEnum.TEST;
         sendEthernetPacket(desMAC, srcMAC, dataLinkParameterEnum, data);
         System.out.println("发送结束");
+    }
+
+    /**
+     * 根据单位，获取倍数关系
+     * @param unit 单位
+     * @return 倍数
+     */
+    private float getValueByUnit(String unit) {
+        EnumSet<ParameterUnitEnum> set = EnumSet.allOf(ParameterUnitEnum.class);
+        Iterator<ParameterUnitEnum> iterator = set.iterator();
+        float value = 0F;
+        while (iterator.hasNext()) {
+            ParameterUnitEnum parameterUnitEnum = iterator.next();
+            if (parameterUnitEnum.getUnit().equals(unit)) {
+                value = parameterUnitEnum.getValue();
+                break;
+            }
+        }
+        return value;
     }
 }

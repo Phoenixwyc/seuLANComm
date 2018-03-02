@@ -27,11 +27,9 @@ public class TestSend {
         JpcapSender sender = null;
         try {
             sender = JpcapSender.openDevice(devices[0]);
-            while (true) {
-                sendData(frameType, dest, src, data, sender);
-                Thread.sleep(1000);
-                System.out.println("发送数据");
-            }
+            sendData(frameType, dest, src, data, sender);
+            Thread.sleep(1000);
+            System.out.println("发送数据");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -17,11 +17,11 @@ public class Receiver implements PacketReceiver{
 
     public static void main(String[] args) {
         String filterDst = "ether dst 00:0C:29:1E:AA:3F";
-        String filterSrc = "ether src 00:23:24:B0:96:A7";
+        String filterSrc = "ether src 00:0C:29:1E:AA:3F";
         NetworkInterface[] devices = JpcapCaptor.getDeviceList();
         try {
             JpcapCaptor jpcapCaptor = JpcapCaptor.openDevice(devices[0], 2000, false, 20);
-            jpcapCaptor.setFilter(filterDst, true);
+            jpcapCaptor.setFilter(filterSrc, true);
             jpcapCaptor.loopPacket(-1, new Receiver());
         } catch(IOException e) {
             e.printStackTrace();

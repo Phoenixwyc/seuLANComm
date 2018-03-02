@@ -1,8 +1,6 @@
-package cn.seu.edu.LANComm.ui;
+package cn.seu.edu.LANComm.DynamicChart;
 
-import cn.seu.edu.LANComm.communication.util.FramingDecoder;
 import cn.seu.edu.LANComm.util.FontEnum;
-import jpcap.packet.Packet;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -12,9 +10,6 @@ import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
-import javax.swing.JFrame;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -26,13 +21,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
 
-    private static TimeSeries timeSeries;
     private long undateIntervalInmills;
     private volatile boolean timeSeriesChartIsRunning = true;
-    private BlockingQueue<Packet> data;
+    BlockingQueue<Double> blockingQueue;
+    private static TimeSeries timeSeries;
     /**
      * 创建时序图
-     * @param chartContent legend
      * @param chartTitle 标题
      * @param xAxisName X轴label
      * @param yAxisName Y轴label
@@ -40,12 +34,14 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
      * @param undateIntervalInmills 数据刷新时间，建议设大一点
      */
     public CreateTimeSeriesChart(String chartContent, String chartTitle, String xAxisName,
-                                         String yAxisName, double dataLenShowd, long undateIntervalInmills, BlockingQueue<Packet> data) {
+                                 String yAxisName, double dataLenShowd, long undateIntervalInmills, BlockingQueue<Double> blockingQueue) {
+
         super(createChart(chartContent, chartTitle, xAxisName, yAxisName, dataLenShowd));
         this.undateIntervalInmills = undateIntervalInmills;
-        this.data = data;
+        this.blockingQueue = blockingQueue;
     }
 
+    @SuppressWarnings("all")
     private static JFreeChart createChart(String chartContent, String chartTitle, String xAxisName,
                                           String yAxisName, double dataLenShowed) {
 
@@ -66,56 +62,20 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
         valueAxis.setLabelFont(FontEnum.CHART_XYLABEL_FONT.getFont());
 
         return jFreeChart;
-
     }
+
     @Override
     public void run() {
-        // TODO: 2018/2/1 消费者，数据来自网卡，实现timeSeries的数据更新
         try {
             while (timeSeriesChartIsRunning) {
-                Packet packet = data.poll(5000, TimeUnit.MILLISECONDS);
-                if (packet != null) {
-                    float[] dataToAdd = new FramingDecoder(packet.data).getTransmittedData();
-                    for (float data : dataToAdd) {
-                        timeSeries.addOrUpdate(new Millisecond(), data);
-                    }
-                    Thread.sleep(this.undateIntervalInmills);
-                } else {
-                    timeSeriesChartIsRunning = false;
-                    System.out.println("绘图线程结束");
+                Double value = blockingQueue.poll(5000, TimeUnit.MILLISECONDS);
+                if (value != null) {
+                    timeSeries.addOrUpdate(new Millisecond(), value.doubleValue());
                 }
+                Thread.sleep(undateIntervalInmills);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-    }
-
-    public BlockingQueue<Packet> getData() {
-        return data;
-    }
-
-    public void setData(BlockingQueue<Packet> data) {
-        this.data = data;
-    }
-
-    public static void main(String[] args) {
-        JFrame frame = new JFrame();
-
-        String chartContent = "随机数";
-        String chartTitle = "随机数标题";
-        String xAxisLabel = "时间";
-        String yAxisLabel = "随机数";
-        double dataLenShowed = 10000d;
-        long updateInterval = 100;
-        BlockingQueue<Packet> data = null;
-
-        CreateTimeSeriesChart createTimeSeriesChart = new CreateTimeSeriesChart(
-                chartContent, chartTitle, xAxisLabel, yAxisLabel,dataLenShowed, updateInterval, data);
-        frame.getContentPane().add(createTimeSeriesChart);
-        frame.pack();
-        frame.setVisible(true);
-        (new Thread(createTimeSeriesChart)).start();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 }
