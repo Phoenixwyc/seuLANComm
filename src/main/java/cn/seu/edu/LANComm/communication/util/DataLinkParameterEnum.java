@@ -21,7 +21,6 @@ public enum DataLinkParameterEnum {
     RECEIVED_SYMBOL_DATA("6", "接收的符号，float类型"),
     SAMPLE_RATE("7", "中频采样率，float类型");
 
-
     /**
      * 参数类型
      */

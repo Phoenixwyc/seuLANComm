@@ -1,7 +1,12 @@
 package cn.seu.edu.LANComm.ui;
 
-import cn.seu.edu.LANComm.communication.util.ParameterUnitEnum;
+import cn.seu.edu.LANComm.communication.EthernetPacketSender;
+import cn.seu.edu.LANComm.communication.util.*;
 import cn.seu.edu.LANComm.util.CommunicationModeEnum;
+import jpcap.JpcapCaptor;
+import jpcap.NetworkInterface;
+import jpcap.PacketReceiver;
+import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
 
 import javax.swing.ImageIcon;
@@ -18,8 +23,10 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -141,17 +148,60 @@ class FrameSet extends JFrame {
         super.pack();
 
         /**
-         * 这里会比较复杂，主要实现各各种线程的控制
+         * 这里会比较复杂，单独拿出来，控制线程的启停与数据的收发
          */
         confirmButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (collector.getSwitchTransmitAndReceive().equals("发送")){
                     // TODO: 2018/2/25 这里执行数据发送，主要完成参数的发送、连接测试
-                    // 待发送的数据
+                    // 发送参数配置数据
                     System.out.println("待发送的数据");
                     showArray(getParameterSelected());
-
+                    EthernetPacketSender.sendEthernetPacket(new String[]{collector.getTxMAC(), collector.getRxMAC()},
+                            collector.getLocalMAC(), DataLinkParameterEnum.PARAMETER_SETTING, getParameterSelected());
+                    // 接收中频采样信号, 一次性使用，写一个匿名内部类算球~
+                    // 有空再重构~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    String srcFilter = "ether dst " + collector.getRxMAC() + " and " + collector.getTxMAC();
+                    String localMAC = collector.getLocalMAC();
+                    Map<String, Float> sampleRate = new HashMap<>();
+                    try {
+                        NetworkInterface deviceUsed = NetworkInterfaceUtil.getDesignateDeviceByMACString(localMAC);
+                        if (deviceUsed != null) {
+                            JpcapCaptor jpcapCaptor = JpcapCaptor.openDevice(deviceUsed, 2000, false, 2000);
+                            jpcapCaptor.setFilter(srcFilter, true);
+                            PacketReceiver sampleRateReceiver = new PacketReceiver() {
+                                @Override
+                                public void receivePacket(Packet packet) {
+                                    EthernetPacket ethernetPacket = (EthernetPacket) packet.datalink;
+                                    // 对帧的FrameType进行过滤
+                                    if (Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType()) == ethernetPacket.frametype) {
+                                        FramingDecoder decoder = new FramingDecoder(packet.data);
+                                        // 对源地址进行过滤
+                                        if (MACStringConvertor.macToString(ethernetPacket.src_mac).equals(collector.getTxMAC())) {
+                                            float[] sampleRateTx = decoder.getTransmittedData();
+                                            sampleRate.put(collector.getTxMAC(), new Float(sampleRateTx[0]));
+                                            System.out.println("收到Tx: " + collector.getTxMAC() + " 中频采样率: " + sampleRateTx[0]);
+                                        } else if (MACStringConvertor.macToString(ethernetPacket.src_mac).equals(collector.getRxMAC())) {
+                                            float[] sampleRateRx = decoder.getTransmittedData();
+                                            sampleRate.put(collector.getRxMAC(), new Float(sampleRateRx[0]));
+                                            System.out.println("收到Rx: " + collector.getRxMAC() + " 中频采样率: " + sampleRateRx[0]);
+                                        }
+                                        if (sampleRate.keySet().size() == 2) {
+                                            jpcapCaptor.breakLoop();
+                                            System.out.println("emmm， 中频采样接收完成，中频接收资源关闭");
+                                        }
+                                    }
+                                }
+                            };
+                            jpcapCaptor.loopPacket(-1, sampleRateReceiver);
+                            if (jpcapCaptor != null) {
+                                jpcapCaptor.close();
+                            }
+                        }
+                    } catch (IOException e1) {
+                        System.out.println("fuck 接收中频采样是怎么打不开端口！！");
+                    }
                 } else if (collector.getSwitchTransmitAndReceive().equals("接收")){
                     // TODO: 2018/2/25 这里执行数据接收
                 }
@@ -276,6 +326,7 @@ class FrameSet extends JFrame {
         for (float item : data) {
             System.out.print(item + " ");
         }
+        System.out.println();
     }
 
 

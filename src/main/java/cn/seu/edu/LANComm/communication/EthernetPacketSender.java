@@ -22,10 +22,6 @@ public class EthernetPacketSender {
     private static final int MINIUM_BYTES = 46;
     private static final int MAXIUM_BYTES = 1400;
     /**
-     * 以太帧消息类型
-     */
-    private static final short FRAME_TYPE = 8511;
-    /**
      * 发送MAC帧
      * @param destMAC 目的MAC地址 6 byte
      * @param srcMAC 源MAC地址 6 byte
@@ -115,11 +111,17 @@ public class EthernetPacketSender {
             // 向所有指定MAC发送数据帧
             for (String MAC : receiverMACs) {
                 byte[] desMAC = MACStringConvertor.stringToMAC(MAC);
-                sendData(FRAME_TYPE, desMAC, srcMAC, bytesToSend, sender);
+                sendData(Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType()),
+                        desMAC, srcMAC, bytesToSend, sender);
+            }
+            // 关闭资源
+            if (sender != null) {
+                sender.close();
             }
         } else {
             // TODO: 2018/2/24 端口错误提示
         }
+
     }
 
     public static void main(String[] args) {
