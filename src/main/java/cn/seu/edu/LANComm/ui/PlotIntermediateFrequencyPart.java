@@ -20,13 +20,18 @@ public class PlotIntermediateFrequencyPart implements Runnable{
     private static final String CHART_TITLE = "中频信号时域图";
     private static final String XLABEL_NAME = "时间";
     private static final String YLABEL_NAME = "幅度";
-    private static final double DATA_LENGTH_SHOWED = 10000D;
+    private static final double DATA_LENGTH_SHOWED = 1000D;
     private static final long UPDATE_INTERVAL = 100;
     private  CreateTimeSeriesChart timeSeriesChart;
+    private JPanel chartPanel;
+
+    public PlotIntermediateFrequencyPart(JPanel chartPanel) {
+        this.chartPanel = chartPanel;
+    }
 
     public JPanel createIntermediateFrequencyChart(BlockingQueue<Packet> dataToshow) {
         timeSeriesChart = new CreateTimeSeriesChart(CHART_CONTENT,
-                CHART_TITLE, XLABEL_NAME, YLABEL_NAME, DATA_LENGTH_SHOWED, UPDATE_INTERVAL, dataToshow);
+                CHART_TITLE, XLABEL_NAME, YLABEL_NAME, DATA_LENGTH_SHOWED, UPDATE_INTERVAL, dataToshow, chartPanel);
 
         JPanel panel = new JPanel();
         panel.setBackground(Color.WHITE);
@@ -37,6 +42,7 @@ public class PlotIntermediateFrequencyPart implements Runnable{
 
     @Override
     public void run() {
+        System.out.println("中频信号接收线程启动");
         new Thread(timeSeriesChart).start();
     }
 }

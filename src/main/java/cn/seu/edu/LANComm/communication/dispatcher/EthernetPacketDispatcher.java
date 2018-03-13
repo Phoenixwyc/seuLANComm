@@ -1,4 +1,4 @@
-package cn.seu.edu.LANComm.communication;
+package cn.seu.edu.LANComm.communication.dispatcher;
 
 import cn.seu.edu.LANComm.communication.util.DataLinkParameterEnum;
 import cn.seu.edu.LANComm.communication.util.FramingDecoder;
@@ -14,14 +14,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class EthernetPacketDispatcher implements PacketReceiver{
     private static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
-    /**
-     * 接收过滤器
-     */
-    private String filter;
-    /**
-     * 用于接收的本机MAC地址
-     */
-    private String localMAC;
     /**
      * 帧插入超时
      */
@@ -48,11 +40,9 @@ public class EthernetPacketDispatcher implements PacketReceiver{
     BlockingQueue<Packet> receivedSymbol;
 
 
-    public EthernetPacketDispatcher(String filter, String localMAC, long offerTimeout, BlockingQueue<Packet> constellationData,
+    public EthernetPacketDispatcher(long offerTimeout, BlockingQueue<Packet> constellationData,
                                     BlockingQueue<Packet> intermediateFrequenceData, BlockingQueue<Packet> hoppingPatternData,
                                     BlockingQueue<Packet> transmittedSymbol, BlockingQueue<Packet> receivedSymbol) {
-        this.filter = filter;
-        this.localMAC = localMAC;
         this.offerTimeout = offerTimeout;
         this.constellationData = constellationData;
         this.intermediateFrequenceData = intermediateFrequenceData;
@@ -79,18 +69,23 @@ public class EthernetPacketDispatcher implements PacketReceiver{
                 // 星座数据
                 if (DataLinkParameterEnum.CONSTELLATION_DATA.getDataType().equals(parameterIDentifier)) {
                     success = constellationData.offer(packet, offerTimeout, TIME_UNIT);
+                    System.out.println("收到星座数据包" + constellationData.size());
                     // 中频信号
                 } else if (DataLinkParameterEnum.INTERMEDIATE_DATA.getDataType().equals(parameterIDentifier)) {
                     success = intermediateFrequenceData.offer(packet, offerTimeout, TIME_UNIT);
+                    System.out.println("收到中频信号数据包" + intermediateFrequenceData.size());
                     // 跳频图案
                 } else if (DataLinkParameterEnum.HOPPING_PATTERN_DATA.getDataType().equals(parameterIDentifier)) {
                     success = hoppingPatternData.offer(packet, offerTimeout, TIME_UNIT);
+                    System.out.println("收到跳频图案数据包" + hoppingPatternData.size());
                     // 发送的符号
                 } else if (DataLinkParameterEnum.TRANSMITTED_SYMBOL_DATA.getDataType().equals(parameterIDentifier)) {
                     success = transmittedSymbol.offer(packet, offerTimeout, TIME_UNIT);
+                    System.out.println("收到发送符号数据包" + transmittedSymbol.size());
                     // 接收的符号
                 } else if (DataLinkParameterEnum.RECEIVED_SYMBOL_DATA.getDataType().equals(parameterIDentifier)) {
                     success = receivedSymbol.offer(packet, offerTimeout, TIME_UNIT);
+                    System.out.println("收到接收符号数据包" + receivedSymbol.size());
                 }
 
                 if (!success) {
@@ -122,22 +117,6 @@ public class EthernetPacketDispatcher implements PacketReceiver{
 
     public BlockingQueue<Packet> getReceivedSymbol() {
         return receivedSymbol;
-    }
-
-    public String getFilter() {
-        return filter;
-    }
-
-    public void setFilter(String filter) {
-        this.filter = filter;
-    }
-
-    public String getLocalMAC() {
-        return localMAC;
-    }
-
-    public void setLocalMAC(String localMAC) {
-        this.localMAC = localMAC;
     }
 
     public long getOfferTimeout() {

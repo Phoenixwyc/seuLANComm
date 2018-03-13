@@ -19,7 +19,9 @@ public enum DataLinkParameterEnum {
     HOPPING_PATTERN_DATA("4", "跳频图案数据，float类型"),
     TRANSMITTED_SYMBOL_DATA("5", "发送的符号，float类型"),
     RECEIVED_SYMBOL_DATA("6", "接收的符号，float类型"),
-    SAMPLE_RATE("7", "中频采样率，float类型");
+    SAMPLE_RATE("7", "中频采样率，float类型"),
+    COMMUNICATION_START("8", "前置工作完成，通信开始， float类型"),
+    COMMUNICATION_STOP("9", "通信结束，停止数据发送");
 
     /**
      * 参数类型
@@ -41,5 +43,13 @@ public enum DataLinkParameterEnum {
 
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String toString() {
+        return "DataLinkParameterEnum{" +
+                "dataType='" + dataType + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

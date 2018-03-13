@@ -10,6 +10,8 @@ import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +27,7 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
     private volatile boolean timeSeriesChartIsRunning = true;
     BlockingQueue<Double> blockingQueue;
     private static TimeSeries timeSeries;
+    private JPanel chartPanel;
     /**
      * 创建时序图
      * @param chartTitle 标题
@@ -34,11 +37,13 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
      * @param undateIntervalInmills 数据刷新时间，建议设大一点
      */
     public CreateTimeSeriesChart(String chartContent, String chartTitle, String xAxisName,
-                                 String yAxisName, double dataLenShowd, long undateIntervalInmills, BlockingQueue<Double> blockingQueue) {
+                                 String yAxisName, double dataLenShowd, long undateIntervalInmills, BlockingQueue<Double> blockingQueue,
+                                 JPanel chartPanel) {
 
         super(createChart(chartContent, chartTitle, xAxisName, yAxisName, dataLenShowd));
         this.undateIntervalInmills = undateIntervalInmills;
         this.blockingQueue = blockingQueue;
+        this.chartPanel = chartPanel;
     }
 
     @SuppressWarnings("all")
@@ -78,4 +83,11 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
             e.printStackTrace();
         }
     }
+
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension panelSize = this.chartPanel.getSize();
+        return panelSize;
+    }
+
 }

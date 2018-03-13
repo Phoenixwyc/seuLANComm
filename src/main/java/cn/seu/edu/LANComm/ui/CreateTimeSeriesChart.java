@@ -12,7 +12,8 @@ import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
-import javax.swing.JFrame;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.concurrent.BlockingQueue;
@@ -28,8 +29,8 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
 
     private static TimeSeries timeSeries;
     private long undateIntervalInmills;
-    private volatile boolean timeSeriesChartIsRunning = true;
     private BlockingQueue<Packet> data;
+    private JPanel chartPanel;
     /**
      * 创建时序图
      * @param chartContent legend
@@ -40,10 +41,11 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
      * @param undateIntervalInmills 数据刷新时间，建议设大一点
      */
     public CreateTimeSeriesChart(String chartContent, String chartTitle, String xAxisName,
-                                         String yAxisName, double dataLenShowd, long undateIntervalInmills, BlockingQueue<Packet> data) {
+                                         String yAxisName, double dataLenShowd, long undateIntervalInmills, BlockingQueue<Packet> data, JPanel chartPanel) {
         super(createChart(chartContent, chartTitle, xAxisName, yAxisName, dataLenShowd));
         this.undateIntervalInmills = undateIntervalInmills;
         this.data = data;
+        this.chartPanel = chartPanel;
     }
 
     private static JFreeChart createChart(String chartContent, String chartTitle, String xAxisName,
@@ -70,10 +72,11 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
     }
     @Override
     public void run() {
+        System.out.println("中频信号绘图线程启动");
         // TODO: 2018/2/1 消费者，数据来自网卡，实现timeSeries的数据更新
         try {
-            while (timeSeriesChartIsRunning) {
-                Packet packet = data.poll(5000, TimeUnit.MILLISECONDS);
+            while (true) {
+                Packet packet = data.poll(10000, TimeUnit.MILLISECONDS);
                 if (packet != null) {
                     float[] dataToAdd = new FramingDecoder(packet.data).getTransmittedData();
                     for (float data : dataToAdd) {
@@ -81,14 +84,24 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
                     }
                     Thread.sleep(this.undateIntervalInmills);
                 } else {
-                    timeSeriesChartIsRunning = false;
-                    System.out.println("绘图线程结束");
+                    System.out.println("数据缓冲区为空");
                 }
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * 重写ChartPanel的getPreferredSize
+     * 实现画布大小动态调整
+     * @return
+     */
+    @Override
+    public Dimension getPreferredSize() {
+
+        return chartPanel.getSize();
     }
 
     public BlockingQueue<Packet> getData() {
@@ -111,7 +124,7 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
         BlockingQueue<Packet> data = null;
 
         CreateTimeSeriesChart createTimeSeriesChart = new CreateTimeSeriesChart(
-                chartContent, chartTitle, xAxisLabel, yAxisLabel,dataLenShowed, updateInterval, data);
+                chartContent, chartTitle, xAxisLabel, yAxisLabel,dataLenShowed, updateInterval, data, new JPanel());
         frame.getContentPane().add(createTimeSeriesChart);
         frame.pack();
         frame.setVisible(true);

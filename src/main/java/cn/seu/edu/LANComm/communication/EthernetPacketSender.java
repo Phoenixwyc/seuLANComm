@@ -128,9 +128,9 @@ public class EthernetPacketSender {
         String[] desMAC = {"00-0C-29-62-C7-C8",
                             "00-0C-29-1E-AA-3F"};
         String srcMAC = "00-23-24-B0-96-A7";
-        float[] data = {3F,3.14F,3F,3.14F};
+        float[] data = {1F,3.14F,3F,3.14F,4F,6F};
         System.out.println("开始发送");
-        DataLinkParameterEnum dataLinkParameterEnum = DataLinkParameterEnum.TEST;
+        DataLinkParameterEnum dataLinkParameterEnum = DataLinkParameterEnum.COMMUNICATION_START;
         sendEthernetPacket(desMAC, srcMAC, dataLinkParameterEnum, data);
         System.out.println("发送结束");
     }

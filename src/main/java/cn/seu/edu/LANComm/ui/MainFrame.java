@@ -1,20 +1,19 @@
 package cn.seu.edu.LANComm.ui;
 
 import cn.seu.edu.LANComm.communication.EthernetPacketSender;
+import cn.seu.edu.LANComm.communication.dispatcher.EthernetPacketDispatcher;
+import cn.seu.edu.LANComm.communication.dispatcher.IntermediateFrequencyDataPacketDispatcher;
+import cn.seu.edu.LANComm.communication.receiver.IntermediateFrequencyDataReceiver;
 import cn.seu.edu.LANComm.communication.util.*;
 import cn.seu.edu.LANComm.util.CommunicationModeEnum;
 import jpcap.JpcapCaptor;
+import jpcap.JpcapWriter;
 import jpcap.NetworkInterface;
 import jpcap.PacketReceiver;
 import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -88,6 +87,10 @@ class FrameSet extends JFrame {
      */
     BlockingQueue<Packet> receivedSymbol = new LinkedBlockingQueue<>();
 
+    private boolean receiveStarted = false;
+
+    private boolean sendStarted = false;
+
     /**
      * 设置最优尺寸
      */
@@ -133,12 +136,35 @@ class FrameSet extends JFrame {
         // 绘图面板
         JPanel plotPanel = new JPanel(new GridLayout(1,4));
         plotPanel.setBackground(Color.WHITE);
-        plotPanel.setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
-        // 中频信号
-        PlotIntermediateFrequencyPart intermediateFrequencyPart = new PlotIntermediateFrequencyPart();
-        plotPanel.add(intermediateFrequencyPart.createIntermediateFrequencyChart(intermediateFrequenceData));
-        // TODO: 2018/2/25 启动 intermediateFrequencyPart 线程
-
+        plotPanel.setSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+        // 中频时域图
+        JPanel intermediateFrequencyPartPanel = new JPanel();
+        intermediateFrequencyPartPanel.setBackground(Color.WHITE);
+        intermediateFrequencyPartPanel.setSize(new Dimension(DEFAULT_WIDTH / 4, DEFAULT_HEIGHT));
+        PlotIntermediateFrequencyPart intermediateFrequencyPart = new PlotIntermediateFrequencyPart(intermediateFrequencyPartPanel);
+        intermediateFrequencyPartPanel.add(intermediateFrequencyPart.createIntermediateFrequencyChart(intermediateFrequenceData));
+        plotPanel.add(intermediateFrequencyPartPanel);
+        // 中频频率图
+        JPanel intermediateFrequencyFFTPartPanel  = new JPanel();
+        intermediateFrequencyFFTPartPanel.setBackground(Color.WHITE);
+        intermediateFrequencyFFTPartPanel.setSize(new Dimension(DEFAULT_WIDTH / 4, DEFAULT_HEIGHT));
+        // TODO: 2018/3/13 在这里创建中频频率图 
+//        intermediateFrequencyFFTPartPanel.add(intermediateFrequencyPartPanel);
+        plotPanel.add(intermediateFrequencyFFTPartPanel);
+        // 星座图
+        JPanel constellationDiagramPartPanel = new JPanel();
+        constellationDiagramPartPanel.setBackground(Color.WHITE);
+        constellationDiagramPartPanel.setSize(new Dimension(DEFAULT_WIDTH / 4, DEFAULT_HEIGHT));
+        // TODO: 2018/3/13 在这里创建星座图 
+//        constellationDiagramPartPanel.add(intermediateFrequencyPartPanel);
+        plotPanel.add(constellationDiagramPartPanel);
+        // 跳频图案图
+        JPanel hoppingPatterPartPanel = new JPanel();
+        hoppingPatterPartPanel.setBackground(Color.WHITE);
+        hoppingPatterPartPanel.setSize(new Dimension(DEFAULT_WIDTH / 4, DEFAULT_HEIGHT));
+        // TODO: 2018/3/13 在这里创建跳频图案 
+//        hoppingPatterPartPanel.add(intermediateFrequencyPartPanel);
+        plotPanel.add(hoppingPatterPartPanel);
         // 组件汇总
         JPanel panel = new JPanel(new GridLayout(2, 1));
         panel.setBackground(Color.WHITE);
@@ -162,7 +188,8 @@ class FrameSet extends JFrame {
                             collector.getLocalMAC(), DataLinkParameterEnum.PARAMETER_SETTING, getParameterSelected());
                     // 接收中频采样信号, 一次性使用，写一个匿名内部类算球~
                     // 有空再重构~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    String srcFilter = "ether dst " + collector.getRxMAC() + " and " + collector.getTxMAC();
+                    // 根据过滤器规则，MAC地址使用":"分隔而不是"-"
+                    String srcFilter = "ether src " + collector.getRxMAC().replace("-", ":") + " or " + collector.getTxMAC().replace("-", ":");
                     String localMAC = collector.getLocalMAC();
                     Map<String, Float> sampleRate = new HashMap<>();
                     try {
@@ -177,19 +204,23 @@ class FrameSet extends JFrame {
                                     // 对帧的FrameType进行过滤
                                     if (Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType()) == ethernetPacket.frametype) {
                                         FramingDecoder decoder = new FramingDecoder(packet.data);
-                                        // 对源地址进行过滤
-                                        if (MACStringConvertor.macToString(ethernetPacket.src_mac).equals(collector.getTxMAC())) {
-                                            float[] sampleRateTx = decoder.getTransmittedData();
-                                            sampleRate.put(collector.getTxMAC(), new Float(sampleRateTx[0]));
-                                            System.out.println("收到Tx: " + collector.getTxMAC() + " 中频采样率: " + sampleRateTx[0]);
-                                        } else if (MACStringConvertor.macToString(ethernetPacket.src_mac).equals(collector.getRxMAC())) {
-                                            float[] sampleRateRx = decoder.getTransmittedData();
-                                            sampleRate.put(collector.getRxMAC(), new Float(sampleRateRx[0]));
-                                            System.out.println("收到Rx: " + collector.getRxMAC() + " 中频采样率: " + sampleRateRx[0]);
-                                        }
-                                        if (sampleRate.keySet().size() == 2) {
-                                            jpcapCaptor.breakLoop();
-                                            System.out.println("emmm， 中频采样接收完成，中频接收资源关闭");
+                                        if (decoder.getParameterIDentifier().getDataType().equals(DataLinkParameterEnum.SAMPLE_RATE.getDataType())) {
+                                            // 对源地址进行过滤
+                                            if (MACStringConvertor.macToString(ethernetPacket.src_mac).equals(collector.getTxMAC())) {
+                                                float[] sampleRateTx = decoder.getTransmittedData();
+                                                sampleRate.put(collector.getTxMAC(), new Float(sampleRateTx[0]));
+                                                System.out.println("收到Tx: " + collector.getTxMAC() + " 中频采样率: " + sampleRateTx[0]);
+                                            } else if (MACStringConvertor.macToString(ethernetPacket.src_mac).equals(collector.getRxMAC())) {
+                                                float[] sampleRateRx = decoder.getTransmittedData();
+                                                sampleRate.put(collector.getRxMAC(), new Float(sampleRateRx[0]));
+                                                System.out.println("收到Rx: " + collector.getRxMAC() + " 中频采样率: " + sampleRateRx[0]);
+                                            }
+                                            if (sampleRate.keySet().size() == 2) {
+                                                jpcapCaptor.breakLoop();
+                                                System.out.println("emmm， 中频采样接收完成，中频接收资源关闭 " +
+                                                "发送端 " + collector.getTxMAC() + "中频采样率 " + sampleRate.get(collector.getTxMAC()) +
+                                                "接收端 " + collector.getRxMAC() + " 中频采样率 " + sampleRate.get(collector.getRxMAC()));
+                                            }
                                         }
                                     }
                                 }
@@ -204,6 +235,23 @@ class FrameSet extends JFrame {
                     }
                 } else if (collector.getSwitchTransmitAndReceive().equals("接收")){
                     // TODO: 2018/2/25 这里执行数据接收
+                    if (!receiveStarted) {
+                        // 发送启动指示
+                        EthernetPacketSender.sendEthernetPacket(new String[]{collector.getRxMAC(), collector.getTxMAC()}, collector.getLocalMAC(),
+                                DataLinkParameterEnum.COMMUNICATION_START, new float[]{0F});
+
+                        // 各种数据的接收线程
+                        // 中频信号接收
+                        Thread intermediateFrequenceDataPlotter = new Thread(intermediateFrequencyPart);
+                        intermediateFrequenceDataPlotter.start();
+
+                        IntermediateFrequencyDataPacketDispatcher intermediateFrequencyDataPacketDispatcher = new IntermediateFrequencyDataPacketDispatcher(4000,
+                                                                                            intermediateFrequenceData, null);
+                        String TxFilter = "ether src " + collector.getTxMAC().replace("-", ":");
+                        IntermediateFrequencyDataReceiver intermediateFrequencyDataReceiver = new IntermediateFrequencyDataReceiver(collector.getLocalMAC(),
+                                                                                            TxFilter, intermediateFrequencyDataPacketDispatcher);
+                        new Thread(intermediateFrequencyDataReceiver).start();
+                    }
                 }
             }
         });
