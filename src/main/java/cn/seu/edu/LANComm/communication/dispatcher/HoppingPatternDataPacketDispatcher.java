@@ -32,12 +32,12 @@ public class HoppingPatternDataPacketDispatcher implements PacketReceiver{
         if (ethernetPacket.frametype == Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType())) {
             FramingDecoder decoder = new FramingDecoder(packet.data);
             if (decoder.getParameterIDentifier().getDataType().equals(DataLinkParameterEnum.HOPPING_PATTERN_DATA.getDataType())) {
-                System.out.println("收到星座数据包");
                 if (writer != null) {
                     writer.writePacket(packet);
                 }
                 try {
                     boolean success = data.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
+                    System.out.println("插入时跳频图案数据报大小 " + data.size());
                     if (!success) {
                         System.out.println("跳频图案数据插入失败");
                     }

@@ -18,18 +18,20 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
     private static TimeUnit OFFER_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     private long offerTimeout;
     private BlockingQueue<Packet> data;
+    private BlockingQueue<Packet> dataForFFT;
     private JpcapWriter writer;
 
-    public IntermediateFrequencyDataPacketDispatcher(long offerTimeout, BlockingQueue<Packet> data, JpcapWriter writer) {
+    public IntermediateFrequencyDataPacketDispatcher(long offerTimeout, BlockingQueue<Packet> data,
+                                                     BlockingQueue<Packet> dataForFFT, JpcapWriter writer) {
         this.offerTimeout = offerTimeout;
         this.data = data;
+        this.dataForFFT = dataForFFT;
         this.writer =writer;
     }
 
     @Override
     public void receivePacket(Packet packet) {
         EthernetPacket ethernetPacket = (EthernetPacket) packet.datalink;
-        System.out.println("中频数据包判别开始");
         if (Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType()) == ethernetPacket.frametype) {
             FramingDecoder decoder = new FramingDecoder(packet.data);
             if (decoder.getParameterIDentifier().getDataType().equals(DataLinkParameterEnum.INTERMEDIATE_DATA.getDataType())) {
@@ -38,9 +40,14 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
                 }
                 try {
                     boolean success = data.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
-                    System.out.println("收到中频时域信号数据包" + data.size());
+                    boolean successFFT = dataForFFT.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
+                    System.out.println("插入时FFT数据缓冲区大小 " + dataForFFT.size());
+                    System.out.println("插入时中频时域信号缓冲区大小 " + data.size());
                     if (!success) {
                         System.out.println("中频信号数据插入失败");
+                    }
+                    if (!successFFT) {
+                        System.out.println("中频信号FFT数据插入失败");
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();

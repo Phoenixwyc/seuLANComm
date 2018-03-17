@@ -64,7 +64,8 @@ public class ProdecuData2 implements Runnable{
         long updateInterval = 100;
 
         JPanel panel = new JPanel();
-        CreateTimeSeriesChart timeSeriesChart = new CreateTimeSeriesChart(chartContent, chartTitle, xAxisLabel, yAxisLabel, dataLenShowed, updateInterval,data, panel);
+        CreateTimeSeriesChart timeSeriesChart = new CreateTimeSeriesChart(chartContent, chartTitle, xAxisLabel, yAxisLabel,
+                dataLenShowed, updateInterval,data, panel);
 //        timeSeriesChart.setMaximumSize(new Dimension(100, 200));
 //        timeSeriesChart.setMinimumDrawWidth(100);
 //        timeSeriesChart.setMinimumDrawHeight(400);

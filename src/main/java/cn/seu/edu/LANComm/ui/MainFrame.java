@@ -1,13 +1,13 @@
 package cn.seu.edu.LANComm.ui;
 
 import cn.seu.edu.LANComm.communication.EthernetPacketSender;
-import cn.seu.edu.LANComm.communication.dispatcher.EthernetPacketDispatcher;
+import cn.seu.edu.LANComm.communication.dispatcher.ConstellationDataPacketDispatcher;
+import cn.seu.edu.LANComm.communication.dispatcher.HoppingPatternDataPacketDispatcher;
 import cn.seu.edu.LANComm.communication.dispatcher.IntermediateFrequencyDataPacketDispatcher;
-import cn.seu.edu.LANComm.communication.receiver.IntermediateFrequencyDataReceiver;
+import cn.seu.edu.LANComm.communication.receiver.DataReceiver;
 import cn.seu.edu.LANComm.communication.util.*;
 import cn.seu.edu.LANComm.util.CommunicationModeEnum;
 import jpcap.JpcapCaptor;
-import jpcap.JpcapWriter;
 import jpcap.NetworkInterface;
 import jpcap.PacketReceiver;
 import jpcap.packet.EthernetPacket;
@@ -75,6 +75,10 @@ class FrameSet extends JFrame {
      */
     BlockingQueue<Packet> intermediateFrequenceData = new LinkedBlockingQueue<>();
     /**
+     * 接收的中频信号，用于计算FFT
+     */
+    BlockingQueue<Packet> intermediateFrequenceDataFFT = new LinkedBlockingQueue<>();
+    /**
      * 跳频图案
      */
     BlockingQueue<Packet> hoppingPatternData = new LinkedBlockingQueue<>();
@@ -86,6 +90,8 @@ class FrameSet extends JFrame {
      * 接收的符号
      */
     BlockingQueue<Packet> receivedSymbol = new LinkedBlockingQueue<>();
+
+    private Map<String, Float> sampleRate = new HashMap<>();
 
     private boolean receiveStarted = false;
 
@@ -142,28 +148,28 @@ class FrameSet extends JFrame {
         intermediateFrequencyPartPanel.setBackground(Color.WHITE);
         intermediateFrequencyPartPanel.setSize(new Dimension(DEFAULT_WIDTH / 4, DEFAULT_HEIGHT));
         PlotIntermediateFrequencyPart intermediateFrequencyPart = new PlotIntermediateFrequencyPart(intermediateFrequencyPartPanel);
-        intermediateFrequencyPartPanel.add(intermediateFrequencyPart.createIntermediateFrequencyChart(intermediateFrequenceData));
+        intermediateFrequencyPart.createIntermediateFrequencyChart(intermediateFrequenceData);
         plotPanel.add(intermediateFrequencyPartPanel);
-        // 中频频率图
+        // 中频功率谱图
         JPanel intermediateFrequencyFFTPartPanel  = new JPanel();
         intermediateFrequencyFFTPartPanel.setBackground(Color.WHITE);
         intermediateFrequencyFFTPartPanel.setSize(new Dimension(DEFAULT_WIDTH / 4, DEFAULT_HEIGHT));
-        // TODO: 2018/3/13 在这里创建中频频率图 
-//        intermediateFrequencyFFTPartPanel.add(intermediateFrequencyPartPanel);
+        PlotIntermediateFrequencyFFTPart intermediateFrequencyFFTPart = new PlotIntermediateFrequencyFFTPart(intermediateFrequencyFFTPartPanel);
+        intermediateFrequencyFFTPart.createIntermediateFrequencyFFTChart(intermediateFrequenceDataFFT);
         plotPanel.add(intermediateFrequencyFFTPartPanel);
         // 星座图
         JPanel constellationDiagramPartPanel = new JPanel();
         constellationDiagramPartPanel.setBackground(Color.WHITE);
         constellationDiagramPartPanel.setSize(new Dimension(DEFAULT_WIDTH / 4, DEFAULT_HEIGHT));
-        // TODO: 2018/3/13 在这里创建星座图 
-//        constellationDiagramPartPanel.add(intermediateFrequencyPartPanel);
+        PlotConstellationDiagramPart constellationDiagramPart = new PlotConstellationDiagramPart(constellationDiagramPartPanel);
+        constellationDiagramPart.createConstellationDiagramChart(constellationData);
         plotPanel.add(constellationDiagramPartPanel);
         // 跳频图案图
         JPanel hoppingPatterPartPanel = new JPanel();
         hoppingPatterPartPanel.setBackground(Color.WHITE);
         hoppingPatterPartPanel.setSize(new Dimension(DEFAULT_WIDTH / 4, DEFAULT_HEIGHT));
-        // TODO: 2018/3/13 在这里创建跳频图案 
-//        hoppingPatterPartPanel.add(intermediateFrequencyPartPanel);
+        PlotHoppingPatternPart hoppingPatternPart = new PlotHoppingPatternPart(hoppingPatterPartPanel);
+        hoppingPatternPart.createHoppingPatternChart(hoppingPatternData);
         plotPanel.add(hoppingPatterPartPanel);
         // 组件汇总
         JPanel panel = new JPanel(new GridLayout(2, 1));
@@ -191,7 +197,7 @@ class FrameSet extends JFrame {
                     // 根据过滤器规则，MAC地址使用":"分隔而不是"-"
                     String srcFilter = "ether src " + collector.getRxMAC().replace("-", ":") + " or " + collector.getTxMAC().replace("-", ":");
                     String localMAC = collector.getLocalMAC();
-                    Map<String, Float> sampleRate = new HashMap<>();
+//                    Map<String, Float> sampleRate = new HashMap<>();
                     try {
                         NetworkInterface deviceUsed = NetworkInterfaceUtil.getDesignateDeviceByMACString(localMAC);
                         if (deviceUsed != null) {
@@ -216,10 +222,13 @@ class FrameSet extends JFrame {
                                                 System.out.println("收到Rx: " + collector.getRxMAC() + " 中频采样率: " + sampleRateRx[0]);
                                             }
                                             if (sampleRate.keySet().size() == 2) {
+                                                // 设置中频采样率
+                                                intermediateFrequencyFFTPart.setSampleRate(sampleRate.get(collector.getRxMAC()));
                                                 jpcapCaptor.breakLoop();
                                                 System.out.println("emmm， 中频采样接收完成，中频接收资源关闭 " +
                                                 "发送端 " + collector.getTxMAC() + "中频采样率 " + sampleRate.get(collector.getTxMAC()) +
-                                                "接收端 " + collector.getRxMAC() + " 中频采样率 " + sampleRate.get(collector.getRxMAC()));
+                                                "接收端 " + collector.getRxMAC() + " 中频采样率 " + sampleRate.get(collector.getRxMAC()) +
+                                                "中频功率谱采样率 " + intermediateFrequencyFFTPart.getSampleRate());
                                             }
                                         }
                                     }
@@ -244,13 +253,35 @@ class FrameSet extends JFrame {
                         // 中频信号接收
                         Thread intermediateFrequenceDataPlotter = new Thread(intermediateFrequencyPart);
                         intermediateFrequenceDataPlotter.start();
-
                         IntermediateFrequencyDataPacketDispatcher intermediateFrequencyDataPacketDispatcher = new IntermediateFrequencyDataPacketDispatcher(4000,
-                                                                                            intermediateFrequenceData, null);
+                                                                                            intermediateFrequenceData, intermediateFrequenceDataFFT, null);
                         String TxFilter = "ether src " + collector.getTxMAC().replace("-", ":");
-                        IntermediateFrequencyDataReceiver intermediateFrequencyDataReceiver = new IntermediateFrequencyDataReceiver(collector.getLocalMAC(),
+                        DataReceiver IntermediateFrequencyDataReceiver = new DataReceiver(collector.getLocalMAC(),
                                                                                             TxFilter, intermediateFrequencyDataPacketDispatcher);
-                        new Thread(intermediateFrequencyDataReceiver).start();
+                        new Thread(IntermediateFrequencyDataReceiver).start();
+
+                        // 中频信号FFT接收
+                        Thread intermediateFrequencyFFTPlotter = new Thread(intermediateFrequencyFFTPart);
+                        intermediateFrequencyFFTPlotter.start();
+                        
+                        // 接收端星座数据接收
+                        Thread constellationDiagramPlotter = new Thread(constellationDiagramPart);
+                        constellationDiagramPlotter.start();
+                        ConstellationDataPacketDispatcher constellationDataPacketDispatcher = new ConstellationDataPacketDispatcher(4000, constellationData, null);
+                        DataReceiver constellationDataReceiver = new DataReceiver(collector.getLocalMAC(),
+                                TxFilter, constellationDataPacketDispatcher);
+                        new Thread(constellationDataReceiver).start();
+                        
+                        // 接收端跳频图案
+                        Thread hoppingPatternPlotter = new Thread(hoppingPatternPart);
+                        hoppingPatternPlotter.start();
+
+                        HoppingPatternDataPacketDispatcher hoppingPatternDataPacketDispatcher = new HoppingPatternDataPacketDispatcher(4000, hoppingPatternData, null);
+                        DataReceiver hoppingPatternDataReceiver = new DataReceiver(collector.getLocalMAC(), TxFilter, hoppingPatternDataPacketDispatcher);
+                        new Thread(hoppingPatternDataReceiver).start();
+
+                        // TODO: 2018/3/17 在这里开启误码率计算线程 
+                        
                     }
                 }
             }

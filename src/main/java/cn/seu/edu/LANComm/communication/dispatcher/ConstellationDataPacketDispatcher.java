@@ -30,12 +30,13 @@ public class ConstellationDataPacketDispatcher implements PacketReceiver{
         EthernetPacket ethernetPacket = (EthernetPacket) packet.datalink;
         if (Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType()) == ethernetPacket.frametype) {
             FramingDecoder decoder = new FramingDecoder(packet.data);
-            if (decoder.getParameterIDentifier().getDataType().equals(DataLinkParameterEnum.CONSTELLATION_DATA)) {
+            if (decoder.getParameterIDentifier().getDataType().equals(DataLinkParameterEnum.CONSTELLATION_DATA.getDataType())) {
                 if (writer != null) {
                     writer.writePacket(packet);
                 }
                 try {
                     boolean success = data.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
+                    System.out.println("插入时星座数据缓冲区大小 " + data.size());
                     if (!success) {
                         System.out.println("星座数据插入失败");
                     }

@@ -52,7 +52,11 @@ public enum FontEnum {
     /**
      * chart XY轴标签字体
      */
-    CHART_XYLABEL_FONT(new Font("宋体", Font.PLAIN, 10));
+    CHART_XYLABEL_FONT(new Font("宋体", Font.PLAIN, 10)),
+
+    PLOT_ITEM_LABEL_FONT(new Font("宋体", Font.PLAIN, 10)),
+
+    PLOT_NO_DATA_MESSAGE_FONT(new Font("宋体", Font.BOLD, 15));
 
     private Font font;
 

@@ -31,12 +31,12 @@ public class ReceivedSymbolPacketDispatcher implements PacketReceiver{
         if (ethernetPacket.frametype == Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType())) {
             FramingDecoder decoder = new FramingDecoder(packet.data);
             if (decoder.getParameterIDentifier().getDataType().equals(DataLinkParameterEnum.RECEIVED_SYMBOL_DATA.getDataType())) {
-                System.out.println("收到接收符号数据包");
                 if (writer != null) {
                     writer.writePacket(packet);
                 }
                 try {
                     boolean success = data.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
+                    System.out.println("插入时接收符号数据缓冲区大小为 " + data.size());
                     if (!success) {
                         System.out.println("接收符号数据包插入失败");
                     }

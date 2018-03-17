@@ -7,6 +7,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
+import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
@@ -16,6 +17,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +43,8 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
      * @param undateIntervalInmills 数据刷新时间，建议设大一点
      */
     public CreateTimeSeriesChart(String chartContent, String chartTitle, String xAxisName,
-                                         String yAxisName, double dataLenShowd, long undateIntervalInmills, BlockingQueue<Packet> data, JPanel chartPanel) {
+                                 String yAxisName, double dataLenShowd, long undateIntervalInmills,
+                                 BlockingQueue<Packet> data, JPanel chartPanel) {
         super(createChart(chartContent, chartTitle, xAxisName, yAxisName, dataLenShowd));
         this.undateIntervalInmills = undateIntervalInmills;
         this.data = data;
@@ -60,12 +63,21 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
         timeSeries = new TimeSeries(chartContent);
         TimeSeriesCollection timeSeriesCollection = new TimeSeriesCollection(timeSeries);
         JFreeChart jFreeChart = ChartFactory.createTimeSeriesChart(chartTitle, xAxisName,
-                yAxisName, timeSeriesCollection, true, true, false);
+                yAxisName, timeSeriesCollection, false, true, false);
 
         ValueAxis valueAxis = jFreeChart.getXYPlot().getDomainAxis();
         valueAxis.setAutoRange(true);
         valueAxis.setFixedAutoRange(dataLenShowed);
         valueAxis.setLabelFont(FontEnum.CHART_XYLABEL_FONT.getFont());
+
+        // 设置X轴显示方式
+        DateAxis dateAxis = (DateAxis) jFreeChart.getXYPlot().getDomainAxis();
+        // 时间轴仅显示秒
+        SimpleDateFormat format = new SimpleDateFormat("ss");
+        dateAxis.setDateFormatOverride(format);
+        // 设置无数据时显示
+        jFreeChart.getXYPlot().setNoDataMessage("No Data");
+        jFreeChart.getXYPlot().setNoDataMessageFont(FontEnum.PLOT_NO_DATA_MESSAGE_FONT.getFont());
 
         return jFreeChart;
 
@@ -78,6 +90,7 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
             while (true) {
                 Packet packet = data.poll(10000, TimeUnit.MILLISECONDS);
                 if (packet != null) {
+                    System.out.println("绘图时中频时域信号数据缓冲区大小为 " + data.size());
                     float[] dataToAdd = new FramingDecoder(packet.data).getTransmittedData();
                     for (float data : dataToAdd) {
                         timeSeries.addOrUpdate(new Millisecond(), data);

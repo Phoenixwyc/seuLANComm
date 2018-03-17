@@ -3,19 +3,20 @@ package cn.seu.edu.LANComm.communication.receiver;
 import cn.seu.edu.LANComm.communication.dispatcher.IntermediateFrequencyDataPacketDispatcher;
 import cn.seu.edu.LANComm.communication.util.NetworkInterfaceUtil;
 import jpcap.JpcapCaptor;
+import jpcap.PacketReceiver;
 
 import java.io.IOException;
 
 /**
  * Created by Administrator on 2018/3/13.
  */
-public class IntermediateFrequencyDataReceiver implements Runnable{
+public class DataReceiver implements Runnable{
     private String localMAC;
     private String filter;
     private JpcapCaptor captor;
-    private IntermediateFrequencyDataPacketDispatcher dispatcher;
+    private PacketReceiver dispatcher;
 
-    public IntermediateFrequencyDataReceiver(String localMAC, String filter, IntermediateFrequencyDataPacketDispatcher dispatcher) {
+    public DataReceiver(String localMAC, String filter, PacketReceiver dispatcher) {
         this.localMAC = localMAC;
         this.filter = filter;
         this.dispatcher = dispatcher;
@@ -62,11 +63,11 @@ public class IntermediateFrequencyDataReceiver implements Runnable{
         this.captor = captor;
     }
 
-    public IntermediateFrequencyDataPacketDispatcher getDispatcher() {
+    public PacketReceiver getDispatcher() {
         return dispatcher;
     }
 
-    public void setDispatcher(IntermediateFrequencyDataPacketDispatcher dispatcher) {
+    public void setDispatcher(PacketReceiver dispatcher) {
         this.dispatcher = dispatcher;
     }
 }
