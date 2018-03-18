@@ -20,6 +20,7 @@ public class PlotIntermediateFrequencyFFTPart implements Runnable{
     private  IntermediateFrequencyFFTChart intermediateFrequencyFFTChart;
     private JPanel chartPanel;
     private volatile float sampleRate;
+    private volatile  boolean isRunning = true;
 
     public PlotIntermediateFrequencyFFTPart(JPanel chartPanel) {
         this.chartPanel = chartPanel;
@@ -40,6 +41,10 @@ public class PlotIntermediateFrequencyFFTPart implements Runnable{
         intermediateFrequencyFFTChart.setSampleRate(getSampleRate());
         new Thread(intermediateFrequencyFFTChart).start();
         System.out.println("设置中频采样率为 " + intermediateFrequencyFFTChart.getSampleRate());
+    }
+
+    public void stop() {
+        intermediateFrequencyFFTChart.stop();
     }
 
     public float getSampleRate() {

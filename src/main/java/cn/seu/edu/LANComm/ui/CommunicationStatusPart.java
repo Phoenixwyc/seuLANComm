@@ -1,10 +1,11 @@
 package cn.seu.edu.LANComm.ui;
 
+import cn.seu.edu.LANComm.communication.util.FramingDecoder;
 import cn.seu.edu.LANComm.util.FontEnum;
+import jpcap.packet.Packet;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -16,11 +17,19 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * Created by Administrator on 2018/1/27.
+ * @author WYCPhoenix
  */
-public class CommunicationStatusPart {
+public class CommunicationStatusPart implements Runnable{
+    /**
+     * 每次计算误符号率使用的帧的个数
+     */
+    private static final int PACKAGE_PER_CAL = 10;
     /**
      * 两种工作状态常量
      */
@@ -43,6 +52,32 @@ public class CommunicationStatusPart {
     private static final String NORMAL_STATUS_KEY = "NormalRadioButon";
     private static final String ABNORMAL_STATUS_KEY = "AbnormalRadioButton";
     private static final String BIT_ERROR_RATE_TEXT_KEY = "BitErrorRateText";
+    /**
+     * 发射端和接收端发送的符号
+     */
+    private BlockingQueue<Packet> TxSymbol;
+    private BlockingQueue<Packet> RxSymbol;
+    /**
+     * 统计误码率变量
+     */
+    private long lastTotalReceivedSymbol;
+    private long lastTotalErrorSymbol;
+    /**
+     * 误符号率显示
+     */
+    private static JTextField bitErrorRate;
+    /**
+     * 状态显示
+     */
+    private static JRadioButton normal;
+    private static JRadioButton abnormal;
+
+    private volatile boolean isRunning = true;
+
+    public CommunicationStatusPart(BlockingQueue<Packet> txSymbol, BlockingQueue<Packet> rxSymbol) {
+        TxSymbol = txSymbol;
+        RxSymbol = rxSymbol;
+    }
 
     /**
      * 工作状态栏中的内容需要在运行时设置
@@ -61,7 +96,7 @@ public class CommunicationStatusPart {
         JLabel bitErrorRateLabel = new JLabel("误码率：");
         bitErrorRateLabel.setFont(FontEnum.LABEL_FONT.getFont());
         bitErrorRateLabel.setBackground(Color.WHITE);
-        JTextField bitErrorRate = new JTextField("0.0");
+        bitErrorRate = new JTextField("0.0");
         bitErrorRate.setFont(FontEnum.TEXTFIELD_FONT.getFont());
         bitErrorRate.setBackground(Color.WHITE);
         bitErrorRate.setEditable(false);
@@ -69,14 +104,14 @@ public class CommunicationStatusPart {
         bitErrorRatePanel.add(bitErrorRate);
 
         // 正常状态显示
-        JRadioButton normal = new JRadioButton(NORMAL);
+        normal = new JRadioButton(NORMAL);
         normal.setBackground(Color.WHITE);
         normal.setFont(FontEnum.RADIOBUTTOBN_FONT.getFont());
         normal.setFont(FontEnum.STATUS_NORMAL_FONT.getFont());
         normal.setEnabled(false);
 
         // 故障状态显示
-        JRadioButton abnormal = new JRadioButton(ABNORMAL);
+        abnormal = new JRadioButton(ABNORMAL);
         abnormal.setBackground(Color.WHITE);
         abnormal.setFont(FontEnum.RADIOBUTTOBN_FONT.getFont());
         abnormal.setFont(FontEnum.STATUS_ABNORMAL_FONT.getFont());
@@ -120,12 +155,116 @@ public class CommunicationStatusPart {
         return BIT_ERROR_RATE_TEXT_KEY;
     }
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame();
-        frame.add((JPanel)(createStatusPanel().get("StatusPanel")));
-        frame.pack();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+    /**
+     *  系统正常状态
+     */
+    public void setNormalStatus() {
+        normal.setForeground(Color.BLUE);
+        normal.setBackground(Color.GREEN);
+        normal.setSelected(true);
+        // 重置故障状态
+        abnormal.setForeground(Color.BLACK);
+        abnormal.setBackground(Color.WHITE);
     }
 
+    /**
+     * 系统关故障状态
+     */
+    public void setAbnormalStatus() {
+        abnormal.setSelected(true);
+        abnormal.setBackground(Color.RED);
+        abnormal.setForeground(Color.ORANGE);
+        // 重置正常状态
+        normal.setBackground(Color.WHITE);
+        normal.setForeground(Color.BLACK);
+    }
+
+    /**
+     * 设置误码率数值
+     * @param bitErrorRateString 误码率，字符串
+     */
+    public void setBitErrorRateTextFieldString(String bitErrorRateString) {
+        if (bitErrorRateString == null) {
+            bitErrorRate.setText("-1");
+        }
+        bitErrorRate.setText(bitErrorRateString);
+    }
+
+    private Double symbolErrorRateCal() {
+        int packageCount = 0;
+        try {
+            while (packageCount <= PACKAGE_PER_CAL && isRunning) {
+                Packet TxPacket = TxSymbol.poll(10000, TimeUnit.MILLISECONDS);
+                Packet RxPacket = RxSymbol.poll(10000, TimeUnit.MILLISECONDS);
+                if (TxPacket != null && RxPacket != null) {
+                    float[] symbolTx = new FramingDecoder(TxPacket.data).getTransmittedData();
+                    System.out.println("接收的符号");
+                    showArray(symbolTx);
+                    float[] symbolRx = new FramingDecoder(RxPacket.data).getTransmittedData();
+                    System.out.println("发送的符号");
+                    showArray(symbolRx);
+                    // 更新接收的符号总数
+                    if (lastTotalReceivedSymbol < Long.MAX_VALUE) {
+                        lastTotalReceivedSymbol = lastTotalReceivedSymbol + symbolTx.length;
+                        System.out.println("接收的符号个数：" + lastTotalReceivedSymbol);
+                    } else {
+                        lastTotalReceivedSymbol = 1;
+                    }
+                    // 更新接收帧数总数
+                    packageCount = packageCount + 1;
+                    System.out.println("接收的帧的个数：" + packageCount);
+                    // 更新错误符号总数
+                    for (int index = 0; index <= symbolTx.length - 1; index++) {
+                        if (symbolTx[index] != symbolRx[index]) {
+                            if (lastTotalErrorSymbol < Long.MAX_VALUE) {
+                                lastTotalErrorSymbol++;
+                                System.out.println("错误的符号个数：" + lastTotalErrorSymbol);
+                            } else {
+                                lastTotalErrorSymbol = 0;
+                            }
+                        }
+                    }
+                } else {
+                    if (TxPacket == null) {
+                        System.out.println("发送的符号接收超时");
+                    }
+                    if (RxPacket == null) {
+                        System.out.println("接收的符号接收超时");
+                    }
+                }
+            }
+            Double res = (lastTotalErrorSymbol+0.0) / lastTotalReceivedSymbol;
+            return res;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // 误码率计算异常，设为-1
+        return new Double(-1);
+    }
+
+    @Override
+    public void run() {
+        System.out.println("误码率计算线程启动");
+        // 更新误码数据显示
+        while (isRunning) {
+            String errorRate = symbolErrorRateCal().toString();
+            setBitErrorRateTextFieldString(errorRate);
+            System.out.println("误码率计算结果：" + errorRate);
+        }
+        System.out.println("误码率计算线程已经停止");
+    }
+
+    private void showArray(float[] data) {
+        for (float item : data) {
+            System.out.print(item + " ");
+        }
+        System.out.println();
+    }
+
+    /**
+     * 停止误码率计算线程
+     */
+    public void stop() {
+        this.isRunning = false;
+    }
 }

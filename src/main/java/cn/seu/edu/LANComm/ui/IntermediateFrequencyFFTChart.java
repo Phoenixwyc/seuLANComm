@@ -37,6 +37,7 @@ public class IntermediateFrequencyFFTChart extends ChartPanel implements Runnabl
     private BlockingQueue<Packet> data;
     private JPanel chartPanel;
     private volatile float sampleRate;
+    private volatile boolean isRunning = true;
 
    public IntermediateFrequencyFFTChart(String chartContent, String chartTitle, String xAxisName,
                                         String yAxisName, double dataLenToShowed, long updateIntervalInmills,
@@ -77,7 +78,7 @@ public class IntermediateFrequencyFFTChart extends ChartPanel implements Runnabl
     public void run() {
         System.out.println("中频信号FFT绘图开始");
         try {
-            while (true) {
+            while (isRunning) {
                 Packet packet = data.poll(10000, TimeUnit.MILLISECONDS);
                 if (packet != null) {
                     System.out.println("绘图时中频频率数据缓冲区大小为 " + data.size());
@@ -99,6 +100,7 @@ public class IntermediateFrequencyFFTChart extends ChartPanel implements Runnabl
                     System.out.println("中频FFT数据缓冲区没有数据");
                 }
             }
+            System.out.println("中频信号FFT绘图线程停止");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -246,5 +248,9 @@ public class IntermediateFrequencyFFTChart extends ChartPanel implements Runnabl
 
     public void setSampleRate(float sampleRate) {
         this.sampleRate = sampleRate;
+    }
+
+    public void stop() {
+        this.isRunning = false;
     }
 }

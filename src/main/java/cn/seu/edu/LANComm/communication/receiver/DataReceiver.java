@@ -28,7 +28,7 @@ public class DataReceiver implements Runnable{
         jpcap.NetworkInterface devicesUsed = NetworkInterfaceUtil.getDesignateDeviceByMACString(localMAC);
         if (devicesUsed != null) {
             try {
-                captor = JpcapCaptor.openDevice(devicesUsed, 2000, false, 10000);
+                captor = JpcapCaptor.openDevice(devicesUsed, 4000, false, 10000);
                 captor.setFilter(filter, true);;
                 captor.loopPacket(-1, dispatcher);
             } catch (IOException e) {
@@ -37,6 +37,7 @@ public class DataReceiver implements Runnable{
         } else {
             System.err.println("设备打开失败");
         }
+        System.out.println("数据接收线程停止");
     }
 
     public String getLocalMAC() {

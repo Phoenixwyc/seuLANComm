@@ -19,10 +19,11 @@ public class PlotIntermediateFrequencyPart implements Runnable{
     private static final String CHART_TITLE = "中频信号时域图";
     private static final String XLABEL_NAME = "时间";
     private static final String YLABEL_NAME = "幅度";
-    private static final double DATA_LENGTH_SHOWED = 200D;
-    private static final long UPDATE_INTERVAL = 100;
+    private static final double DATA_LENGTH_SHOWED = 2000D;
+    private static final long UPDATE_INTERVAL = 10;
     private  CreateTimeSeriesChart timeSeriesChart;
     private JPanel chartPanel;
+    private volatile boolean isRunning = true;
 
     public PlotIntermediateFrequencyPart(JPanel chartPanel) {
         this.chartPanel = chartPanel;
@@ -43,5 +44,9 @@ public class PlotIntermediateFrequencyPart implements Runnable{
     public void run() {
         System.out.println("中频信号接收线程启动");
         new Thread(timeSeriesChart).start();
+    }
+
+    public void stop() {
+        timeSeriesChart.stop();
     }
 }

@@ -19,6 +19,7 @@ public class PlotHoppingPatternPart implements Runnable{
     private static final long UPDATE_INTERVAL = 10;
     private  HoppingPatternTimeSeriesChart hoppingPatternTimeSeriesChart;
     private JPanel chartPanel;
+    private volatile boolean isRunning = true;
 
     public PlotHoppingPatternPart(JPanel chartPanel) {
         this.chartPanel = chartPanel;
@@ -38,5 +39,9 @@ public class PlotHoppingPatternPart implements Runnable{
     public void run() {
         System.out.println("跳频图案接收线程启动");
         new Thread(hoppingPatternTimeSeriesChart).start();
+    }
+
+    public void stop() {
+        hoppingPatternTimeSeriesChart.stop();
     }
 }

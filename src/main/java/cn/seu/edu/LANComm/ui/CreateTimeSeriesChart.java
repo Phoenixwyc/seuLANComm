@@ -33,6 +33,7 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
     private long undateIntervalInmills;
     private BlockingQueue<Packet> data;
     private JPanel chartPanel;
+    private volatile boolean isRunning = true;
     /**
      * 创建时序图
      * @param chartContent legend
@@ -87,7 +88,7 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
         System.out.println("中频信号绘图线程启动");
         // TODO: 2018/2/1 消费者，数据来自网卡，实现timeSeries的数据更新
         try {
-            while (true) {
+            while (isRunning) {
                 Packet packet = data.poll(10000, TimeUnit.MILLISECONDS);
                 if (packet != null) {
                     System.out.println("绘图时中频时域信号数据缓冲区大小为 " + data.size());
@@ -100,6 +101,7 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
                     System.out.println("数据缓冲区为空");
                 }
             }
+            System.out.println("中频信号时域绘图线程停止");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -125,6 +127,9 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
         this.data = data;
     }
 
+    public void stop() {
+        this.isRunning = false;
+    }
     public static void main(String[] args) {
         JFrame frame = new JFrame();
 

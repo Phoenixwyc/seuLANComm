@@ -20,6 +20,7 @@ public class PlotConstellationDiagramPart implements Runnable{
     private static final long UPDATE_INTERVAL = 1;
     private  ConstellationDiagramChart constellationDiagramChart;
     private JPanel chartPanel;
+    private volatile boolean isRunning = true;
 
     public PlotConstellationDiagramPart(JPanel chartPanel) {
         this.chartPanel = chartPanel;
@@ -38,5 +39,9 @@ public class PlotConstellationDiagramPart implements Runnable{
     public void run() {
         System.out.println("接收星座线程启动");
         new Thread(constellationDiagramChart).start();
+    }
+
+    public void stop() {
+        constellationDiagramChart.stop();
     }
 }

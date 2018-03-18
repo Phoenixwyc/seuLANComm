@@ -28,6 +28,7 @@ public class ConstellationDiagramChart extends ChartPanel implements Runnable {
     private long updateIntervalInmills;
     private BlockingQueue<Packet> data;
     private JPanel chartPanel;
+    private volatile boolean isRunning = true;
 
     public ConstellationDiagramChart(String chartContent, String chartTitle, String xAxisName,
                                      String yAxisName, double dataLenToShowed, long updateIntervalInmills,
@@ -72,7 +73,7 @@ public class ConstellationDiagramChart extends ChartPanel implements Runnable {
     public void run() {
         System.out.println("星座绘图线程启动");
         try {
-            while (true) {
+            while (isRunning) {
                 Packet packet = data.poll(10000, TimeUnit.MILLISECONDS);
                 if (packet != null) {
                     System.out.println("绘图是星座数据缓冲区大小为 " + data.size());
@@ -91,9 +92,14 @@ public class ConstellationDiagramChart extends ChartPanel implements Runnable {
                     System.out.println("星座数据缓冲区数据为空");
                 }
             }
+            System.out.println("星座绘图线程停止");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void stop() {
+        this.isRunning = false;
     }
 
     @Override

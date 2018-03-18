@@ -2,6 +2,7 @@ package cn.seu.edu.LANComm.communication.dispatcher;
 
 import cn.seu.edu.LANComm.communication.util.DataLinkParameterEnum;
 import cn.seu.edu.LANComm.communication.util.FramingDecoder;
+import jpcap.JpcapCaptor;
 import jpcap.JpcapWriter;
 import jpcap.PacketReceiver;
 import jpcap.packet.EthernetPacket;
@@ -20,6 +21,8 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
     private BlockingQueue<Packet> data;
     private BlockingQueue<Packet> dataForFFT;
     private JpcapWriter writer;
+    private JpcapCaptor captor;
+    private volatile boolean isRunning = true;
 
     public IntermediateFrequencyDataPacketDispatcher(long offerTimeout, BlockingQueue<Packet> data,
                                                      BlockingQueue<Packet> dataForFFT, JpcapWriter writer) {
@@ -54,6 +57,9 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
                 }
             }
         }
+        if (!isRunning) {
+            captor.breakLoop();
+        }
     }
 
 
@@ -71,5 +77,17 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
 
     public void setData(BlockingQueue<Packet> data) {
         this.data = data;
+    }
+
+    public void stop() {
+        this.isRunning = false;
+    }
+
+    public JpcapCaptor getCaptor() {
+        return captor;
+    }
+
+    public void setCaptor(JpcapCaptor captor) {
+        this.captor = captor;
     }
 }

@@ -108,10 +108,14 @@ public class HoppingPatternTimeSeriesChart extends ChartPanel implements Runnabl
                     System.out.println("缓冲区无数据");
                 }
             }
+            System.out.println("跳频图案绘图线程停止");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
 
+    public void stop() {
+        this.timeSeriesChartIsRunning = false;
     }
 
     @Override

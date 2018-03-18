@@ -1,9 +1,10 @@
 package cn.seu.edu.LANComm.ui;
 
+import cn.seu.edu.LANComm.communication.util.ParameterUnitEnum;
+import cn.seu.edu.LANComm.util.CommunicationModeEnum;
 import cn.seu.edu.LANComm.util.CommunicationParameterEnum;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 收集所有组件中被选择的值
@@ -12,6 +13,10 @@ import java.util.Map;
  * @date 2018-1-28-14:58
  */
 public final class UIParameterCollector {
+    /**
+     * 跳频模式标识，结尾必须为-FH
+     */
+    private static final String FH = "-FH";
     /**
      * field与对应method的映射
      * key 通信参数名
@@ -240,6 +245,75 @@ public final class UIParameterCollector {
 
     public void setLocalMAC(String localMAC) {
         LocalMAC = localMAC;
+    }
+
+    /**
+     * 对UIParameterCollector的参数进行汇总
+     * key为参数名。value为参数值
+     * 注意这里没有对UIParameterCollector参数的合法性进行校验
+     * 同时，插入顺序就是以后的发送顺序
+     * @return
+     */
+    public float[] getParameterSelected() {
+        List<Float> temp = new ArrayList<>();
+        // 通信模式
+        String commMode = this.getMode();
+        EnumSet<CommunicationModeEnum> modeEnums = EnumSet.allOf(CommunicationModeEnum.class);
+        Iterator<CommunicationModeEnum> iterator = modeEnums.iterator();
+        while (iterator.hasNext()) {
+            CommunicationModeEnum modeEnum = iterator.next();
+            if (modeEnum.getCommunicationMode().equals(commMode)) {
+                temp.add(new Float(modeEnum.getModeCode()));
+                break;
+            }
+        }
+        // 码元速率
+        Float Rb = this.getRb();
+        String unitRb = this.getRbUnit();
+        temp.add(new Float(Rb * getValueByUnit(unitRb)));
+        // 载波速率
+        Float Fc = this.getFc();
+        String unitFc = this.getFcUnit();
+        temp.add(new Float(Fc * getValueByUnit(unitFc)));
+        // 频偏
+        Float frequenceOffset = this.getFrequenceOffset();
+        String unitOffset = this.getFrequenceOffsetUnit();
+        temp.add(new Float(frequenceOffset * getValueByUnit(unitOffset)));
+        // 发送增益
+        Float transmitGain = this.getTransmitGain();
+        String unitTransmitGain = this.getTransmitGainUnit();
+        temp.add(new Float(transmitGain * getValueByUnit(unitTransmitGain)));
+        // 接收增益
+        Float receiveGain = this.getReceiveGain();
+        String unitReceiveGain = this.getReceiveGainUnit();
+        temp.add(new Float(receiveGain * getValueByUnit(unitReceiveGain)));
+        // 跳变速率
+        if (commMode.endsWith(FH)) {
+            Float hops = this.getHop();
+            String unitHop = this.getHopUnit();
+            temp.add(new Float(hops * getValueByUnit(unitHop)));
+        }
+
+        //转为待发送数据
+        float[] res = new float[temp.size()];
+        for (int i = 0; i < temp.size(); i++) {
+            res[i] = temp.get(i).floatValue();
+        }
+        return res;
+    }
+
+    private float getValueByUnit(String unit) {
+        float res = -1F;
+        EnumSet<ParameterUnitEnum> enums = EnumSet.allOf(ParameterUnitEnum.class);
+        Iterator<ParameterUnitEnum> iterator = enums.iterator();
+        while (iterator.hasNext()) {
+            ParameterUnitEnum unitEnum = iterator.next();
+            if (unitEnum.getUnit().equals(unit)) {
+                res = unitEnum.getValue();
+                break;
+            }
+        }
+        return res;
     }
 
     @Override
