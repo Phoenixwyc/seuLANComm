@@ -22,10 +22,9 @@ public class ConstellationDataPacketDispatcher implements PacketReceiver{
     private volatile boolean isRunning = true;
     private JpcapCaptor captor;
 
-    public ConstellationDataPacketDispatcher(long offerTimeout, BlockingQueue<Packet> data, JpcapWriter writer) {
+    public ConstellationDataPacketDispatcher(long offerTimeout, BlockingQueue<Packet> data) {
         this.offerTimeout = offerTimeout;
         this.data = data;
-        this.writer = writer;
     }
 
     @Override
@@ -34,6 +33,7 @@ public class ConstellationDataPacketDispatcher implements PacketReceiver{
         if (Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType()) == ethernetPacket.frametype) {
             FramingDecoder decoder = new FramingDecoder(packet.data);
             if (decoder.getParameterIDentifier().getDataType().equals(DataLinkParameterEnum.CONSTELLATION_DATA.getDataType())) {
+                writer = getWriter();
                 if (writer != null) {
                     writer.writePacket(packet);
                 }
@@ -49,6 +49,7 @@ public class ConstellationDataPacketDispatcher implements PacketReceiver{
             }
         }
         if (!isRunning) {
+            captor = getCaptor();
             captor.breakLoop();
             System.out.println("星座分发线程停止");
         }

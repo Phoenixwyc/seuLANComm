@@ -7,7 +7,9 @@ import cn.seu.edu.LANComm.communication.util.DataLinkParameterEnum;
 import cn.seu.edu.LANComm.communication.util.FramingDecoder;
 import cn.seu.edu.LANComm.communication.util.MACStringConvertor;
 import cn.seu.edu.LANComm.communication.util.NetworkInterfaceUtil;
+import cn.seu.edu.LANComm.util.DumpFileUtil;
 import jpcap.JpcapCaptor;
+import jpcap.JpcapWriter;
 import jpcap.NetworkInterface;
 import jpcap.PacketReceiver;
 import jpcap.packet.EthernetPacket;
@@ -36,6 +38,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class MainFrame {
 
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -73,6 +80,11 @@ class FrameSet extends JFrame {
     private IntermediateFrequencyDataPacketDispatcher intermediateFrequencyDataPacketDispatcher;
     private ReceivedSymbolPacketDispatcher receivedSymbolPacketDispatcher;
     private TransmittedSymbolPacketDispatcher transmittedSymbolPacketDispatcher;
+
+    /**
+     * dumpfile写入
+     */
+    JpcapWriter intermediateFrequencyDataWriter;
 
     /**
      * 接收的星座数据
@@ -124,6 +136,15 @@ class FrameSet extends JFrame {
      * 工作状态确认
      */
     private static final String CONFIRM = "确认";
+
+    /**
+     * dump文件位置的key
+     */
+    private static final String INTERMEDIATEFREQUENCY_DATA = "IntermediateFrequencyData.log";
+    private static final String CONSTELLATION_DATA = "ConstellationData.log";
+    private static final String HOPPING_PATTERN_DATA = "HoppingPatternData.log";
+    private static final String TRANSMITTED_SYMBOL = "TransmittedSymbol.log";
+    private static final String RECEIVED_SYMBOL = "ReceivedData.log";
 
 
     public FrameSet(String title) {
@@ -216,7 +237,6 @@ class FrameSet extends JFrame {
                     // 根据过滤器规则，MAC地址使用":"分隔而不是"-"
                     String srcFilter = "ether src " + collector.getRxMAC().replace("-", ":") + " or " + collector.getTxMAC().replace("-", ":");
                     String localMAC = collector.getLocalMAC();
-//                    Map<String, Float> sampleRate = new HashMap<>();
                     try {
                         NetworkInterface deviceUsed = NetworkInterfaceUtil.getDesignateDeviceByMACString(localMAC);
                         if (deviceUsed != null) {
@@ -266,6 +286,14 @@ class FrameSet extends JFrame {
                 } else if (collector.getSwitchTransmitAndReceive().equals(RECEIVE_DATA)){
                     // TODO: 2018/2/25 这里执行数据接收
                     if (sendStarted) {
+                        // dump文件的位置
+                        Map<String, String> pathMap = DumpFileUtil.getDumFilePath();
+                        String intermediateFrequencyDataDumpFilePath = pathMap.get(INTERMEDIATEFREQUENCY_DATA);
+                        String constellationDataDumpFilePath = pathMap.get(CONSTELLATION_DATA);
+                        String hoppingPatternDataDumpFilePath = pathMap.get(HOPPING_PATTERN_DATA);
+                        String transmittedSymbolDataDumpFilePath = pathMap.get(TRANSMITTED_SYMBOL);
+                        String receivedSymbolDataDumpFilePath = pathMap.get(RECEIVED_SYMBOL);
+
                         // 发送启动指示
                         EthernetPacketSender.sendEthernetPacket(new String[]{collector.getRxMAC(), collector.getTxMAC()}, collector.getLocalMAC(),
                                 DataLinkParameterEnum.COMMUNICATION_START, new float[]{0F});
@@ -275,12 +303,22 @@ class FrameSet extends JFrame {
                         Thread intermediateFrequenceDataPlotter = new Thread(plotIntermediateFrequencyPart);
                         intermediateFrequenceDataPlotter.start();
                         intermediateFrequencyDataPacketDispatcher = new IntermediateFrequencyDataPacketDispatcher(4000,
-                                                                                            intermediateFrequenceData, intermediateFrequenceDataFFT, null);
+                                                                                            intermediateFrequenceData, intermediateFrequenceDataFFT);
                         String TxFilter = "ether src " + collector.getTxMAC().replace("-", ":");
                         DataReceiver intermediateFrequencyDataReceiver = new DataReceiver(collector.getLocalMAC(),
                                                                                             TxFilter, intermediateFrequencyDataPacketDispatcher);
-                        intermediateFrequencyDataPacketDispatcher.setCaptor(intermediateFrequencyDataReceiver.getCaptor());
                         new Thread(intermediateFrequencyDataReceiver).start();
+                        intermediateFrequencyDataPacketDispatcher.setCaptor(intermediateFrequencyDataReceiver.getCaptor());
+                        try {
+                            JpcapCaptor captor = intermediateFrequencyDataReceiver.getCaptor();
+                            intermediateFrequencyDataWriter = JpcapWriter.openDumpFile(captor, intermediateFrequencyDataDumpFilePath);
+                            intermediateFrequencyDataPacketDispatcher.setWriter(intermediateFrequencyDataWriter);
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+
+
+
 
                         // 中频信号FFT接收
                         Thread intermediateFrequencyFFTPlotter = new Thread(plotIntermediateFrequencyFFTPart);
@@ -289,7 +327,7 @@ class FrameSet extends JFrame {
                         // 接收端星座数据接收
                         Thread constellationDiagramPlotter = new Thread(plotConstellationDiagramPart);
                         constellationDiagramPlotter.start();
-                        constellationDataPacketDispatcher = new ConstellationDataPacketDispatcher(4000, constellationData, null);
+                        constellationDataPacketDispatcher = new ConstellationDataPacketDispatcher(4000, constellationData);
                         DataReceiver constellationDataReceiver = new DataReceiver(collector.getLocalMAC(),
                                 TxFilter, constellationDataPacketDispatcher);
                         constellationDataPacketDispatcher.setCaptor(constellationDataReceiver.getCaptor());
@@ -299,16 +337,16 @@ class FrameSet extends JFrame {
                         Thread hoppingPatternPlotter = new Thread(plotHoppingPatternPart);
                         hoppingPatternPlotter.start();
 
-                        hoppingPatternDataPacketDispatcher = new HoppingPatternDataPacketDispatcher(4000, hoppingPatternData, null);
+                        hoppingPatternDataPacketDispatcher = new HoppingPatternDataPacketDispatcher(4000, hoppingPatternData);
                         DataReceiver hoppingPatternDataReceiver = new DataReceiver(collector.getLocalMAC(), TxFilter, hoppingPatternDataPacketDispatcher);
                         hoppingPatternDataPacketDispatcher.setCaptor(hoppingPatternDataReceiver.getCaptor());
                         new Thread(hoppingPatternDataReceiver).start();
 
                         // TODO: 2018/3/17 在这里开启误码率计算线程
-                        transmittedSymbolPacketDispatcher = new TransmittedSymbolPacketDispatcher(4000, transmittedSymbol, null);
+                        transmittedSymbolPacketDispatcher = new TransmittedSymbolPacketDispatcher(4000, transmittedSymbol);
                         DataReceiver transmittedDataReceiver = new DataReceiver(collector.getLocalMAC(), TxFilter, transmittedSymbolPacketDispatcher);
                         transmittedSymbolPacketDispatcher.setCaptor(transmittedDataReceiver.getCaptor());
-                        receivedSymbolPacketDispatcher = new ReceivedSymbolPacketDispatcher(4000, receivedSymbol, null);
+                        receivedSymbolPacketDispatcher = new ReceivedSymbolPacketDispatcher(4000, receivedSymbol);
                         DataReceiver receivedDataReceiver = new DataReceiver(collector.getLocalMAC(), TxFilter, receivedSymbolPacketDispatcher);
                         receivedSymbolPacketDispatcher.setCaptor(receivedDataReceiver.getCaptor());
                         new Thread(transmittedDataReceiver).start();
@@ -355,6 +393,12 @@ class FrameSet extends JFrame {
                     receivedSymbolPacketDispatcher.stop();
                     transmittedSymbolPacketDispatcher.stop();
                     /**
+                     * 停止关闭文件读写器,关闭时候死机什么鬼
+                     */
+//                    if (intermediateFrequencyDataWriter != null) {
+//                        intermediateFrequencyDataWriter.close();
+//                    }
+                    /**
                      * 发送停止指令，下位机回到接收参数状态
                      */
                     EthernetPacketSender.sendEthernetPacket(new String[]{collector.getTxMAC(), collector.getRxMAC()},
@@ -382,5 +426,6 @@ class FrameSet extends JFrame {
         }
         System.out.println();
     }
+
 
 }

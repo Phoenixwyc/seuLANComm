@@ -1,6 +1,5 @@
 package cn.seu.edu.LANComm.communication.receiver;
 
-import cn.seu.edu.LANComm.communication.dispatcher.IntermediateFrequencyDataPacketDispatcher;
 import cn.seu.edu.LANComm.communication.util.NetworkInterfaceUtil;
 import jpcap.JpcapCaptor;
 import jpcap.PacketReceiver;
@@ -20,22 +19,37 @@ public class DataReceiver implements Runnable{
         this.localMAC = localMAC;
         this.filter = filter;
         this.dispatcher = dispatcher;
+        this.captor = getJpcapCaptor();
+    }
+
+    /**
+     * 为避免循环引用问题，先采用这种黑魔法吧，虽然很不好
+     * @return
+     */
+    private JpcapCaptor getJpcapCaptor() {
+        JpcapCaptor captor = null;
+        jpcap.NetworkInterface devicesUsed = NetworkInterfaceUtil.getDesignateDeviceByMACString(localMAC);
+        if (devicesUsed != null) {
+            try {
+                captor = JpcapCaptor.openDevice(devicesUsed, 4000, false, 10000);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("网卡打开失败");
+        }
+        return captor;
     }
 
     @Override
     public void run() {
         System.out.println("中频信号接收线程开始");
-        jpcap.NetworkInterface devicesUsed = NetworkInterfaceUtil.getDesignateDeviceByMACString(localMAC);
-        if (devicesUsed != null) {
-            try {
-                captor = JpcapCaptor.openDevice(devicesUsed, 4000, false, 10000);
-                captor.setFilter(filter, true);;
-                captor.loopPacket(-1, dispatcher);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            System.err.println("设备打开失败");
+        captor = getJpcapCaptor();
+        try {
+            captor.setFilter(filter, true);
+            captor.loopPacket(-1, dispatcher);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         System.out.println("数据接收线程停止");
     }

@@ -2,8 +2,8 @@ package cn.seu.edu.LANComm.ui;
 
 import jpcap.packet.Packet;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JPanel;
+import java.awt.Color;
 import java.util.concurrent.BlockingQueue;
 
 /**

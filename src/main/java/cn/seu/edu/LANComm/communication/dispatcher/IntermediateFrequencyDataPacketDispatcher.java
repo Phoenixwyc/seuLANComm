@@ -25,11 +25,11 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
     private volatile boolean isRunning = true;
 
     public IntermediateFrequencyDataPacketDispatcher(long offerTimeout, BlockingQueue<Packet> data,
-                                                     BlockingQueue<Packet> dataForFFT, JpcapWriter writer) {
+                                                     BlockingQueue<Packet> dataForFFT) {
         this.offerTimeout = offerTimeout;
         this.data = data;
         this.dataForFFT = dataForFFT;
-        this.writer =writer;
+        this.writer = getWriter();
     }
 
     @Override
@@ -38,6 +38,7 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
         if (Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType()) == ethernetPacket.frametype) {
             FramingDecoder decoder = new FramingDecoder(packet.data);
             if (decoder.getParameterIDentifier().getDataType().equals(DataLinkParameterEnum.INTERMEDIATE_DATA.getDataType())) {
+                writer = getWriter();
                 if (writer != null) {
                     writer.writePacket(packet);
                 }
@@ -58,7 +59,10 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
             }
         }
         if (!isRunning) {
-            captor.breakLoop();
+            captor = getCaptor();
+            if (captor != null) {
+                captor.breakLoop();
+            }
         }
     }
 
@@ -89,5 +93,13 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
 
     public void setCaptor(JpcapCaptor captor) {
         this.captor = captor;
+    }
+
+    public JpcapWriter getWriter() {
+        return writer;
+    }
+
+    public void setWriter(JpcapWriter writer) {
+        this.writer = writer;
     }
 }

@@ -4,7 +4,12 @@ import cn.seu.edu.LANComm.communication.util.ParameterUnitEnum;
 import cn.seu.edu.LANComm.util.CommunicationModeEnum;
 import cn.seu.edu.LANComm.util.CommunicationParameterEnum;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 收集所有组件中被选择的值

@@ -7,7 +7,6 @@ import jpcap.JpcapWriter;
 import jpcap.PacketReceiver;
 import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
-import sun.awt.geom.AreaOp;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -19,14 +18,13 @@ public class HoppingPatternDataPacketDispatcher implements PacketReceiver{
     private static final TimeUnit OFFER_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     private long offerTimeout;
     private BlockingQueue<Packet> data;
-    private JpcapWriter writer;
     private JpcapCaptor captor;
+    private JpcapWriter writer;
     private volatile boolean isRunning = true;
 
-    public HoppingPatternDataPacketDispatcher(long offerTimeout, BlockingQueue<Packet> data, JpcapWriter writer) {
+    public HoppingPatternDataPacketDispatcher(long offerTimeout, BlockingQueue<Packet> data) {
         this.offerTimeout = offerTimeout;
         this.data = data;
-        this.writer = writer;
     }
 
     @Override
@@ -35,6 +33,7 @@ public class HoppingPatternDataPacketDispatcher implements PacketReceiver{
         if (ethernetPacket.frametype == Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType())) {
             FramingDecoder decoder = new FramingDecoder(packet.data);
             if (decoder.getParameterIDentifier().getDataType().equals(DataLinkParameterEnum.HOPPING_PATTERN_DATA.getDataType())) {
+                writer = getWriter();
                 if (writer != null) {
                     writer.writePacket(packet);
                 }
@@ -50,8 +49,11 @@ public class HoppingPatternDataPacketDispatcher implements PacketReceiver{
             }
         }
         if (!isRunning) {
-            captor.breakLoop();
-            System.out.println("跳频图案分发线程停止");
+            captor = getCaptor();
+            if (captor != null) {
+                captor.breakLoop();
+                System.out.println("跳频图案分发线程停止");
+            }
         }
     }
 

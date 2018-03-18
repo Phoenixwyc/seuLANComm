@@ -22,10 +22,9 @@ public class TransmittedSymbolPacketDispatcher implements PacketReceiver{
     private JpcapCaptor captor;
     private volatile boolean isRunning = true;
 
-    public TransmittedSymbolPacketDispatcher(long offerTimeout, BlockingQueue<Packet> data, JpcapWriter writer) {
+    public TransmittedSymbolPacketDispatcher(long offerTimeout, BlockingQueue<Packet> data) {
         this.offerTimeout = offerTimeout;
         this.data = data;
-        this.writer = writer;
     }
 
     @Override
@@ -34,6 +33,7 @@ public class TransmittedSymbolPacketDispatcher implements PacketReceiver{
         if (ethernetPacket.frametype == Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType())) {
             FramingDecoder decoder = new FramingDecoder(packet.data);
             if (decoder.getParameterIDentifier().getDataType().equals(DataLinkParameterEnum.TRANSMITTED_SYMBOL_DATA.getDataType())) {
+                writer = getWriter();
                 if (writer != null) {
                     writer.writePacket(packet);
                 }
@@ -49,8 +49,11 @@ public class TransmittedSymbolPacketDispatcher implements PacketReceiver{
             }
         }
         if (!isRunning) {
-            captor.breakLoop();
-            System.out.println("接收的符号接收线程停止");
+            captor = getCaptor();
+            if (captor != null) {
+                captor.breakLoop();
+                System.out.println("接收的符号接收线程停止");
+            }
         }
     }
 

@@ -1,6 +1,10 @@
 package cn.seu.edu.LANComm.communication;
 
-import cn.seu.edu.LANComm.communication.util.*;
+import cn.seu.edu.LANComm.communication.util.DataLinkParameterEnum;
+import cn.seu.edu.LANComm.communication.util.FramingEncoder;
+import cn.seu.edu.LANComm.communication.util.MACStringConvertor;
+import cn.seu.edu.LANComm.communication.util.NetworkInterfaceUtil;
+import cn.seu.edu.LANComm.communication.util.ParameterUnitEnum;
 import jpcap.JpcapSender;
 import jpcap.NetworkInterface;
 import jpcap.packet.EthernetPacket;
