@@ -83,8 +83,12 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
         this.data = data;
     }
 
-    public void stop() {
-        this.isRunning = false;
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public void setRunning(boolean running) {
+        isRunning = running;
     }
 
     public JpcapCaptor getCaptor() {

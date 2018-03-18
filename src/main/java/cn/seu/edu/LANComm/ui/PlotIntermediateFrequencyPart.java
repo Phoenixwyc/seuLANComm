@@ -46,7 +46,11 @@ public class PlotIntermediateFrequencyPart implements Runnable{
         new Thread(timeSeriesChart).start();
     }
 
-    public void stop() {
-        timeSeriesChart.stop();
+    public void stopThread() {
+        timeSeriesChart.setRunning(false);
+    }
+
+    public void startThread() {
+        timeSeriesChart.setRunning(true);
     }
 }

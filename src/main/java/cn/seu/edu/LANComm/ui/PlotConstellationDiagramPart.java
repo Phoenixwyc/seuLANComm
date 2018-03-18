@@ -41,7 +41,10 @@ public class PlotConstellationDiagramPart implements Runnable{
         new Thread(constellationDiagramChart).start();
     }
 
-    public void stop() {
-        constellationDiagramChart.stop();
+    public void stopThread() {
+        constellationDiagramChart.setRunning(false);
+    }
+    public void startThread() {
+        constellationDiagramChart.setRunning(true);
     }
 }

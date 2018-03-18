@@ -41,7 +41,11 @@ public class PlotHoppingPatternPart implements Runnable{
         new Thread(hoppingPatternTimeSeriesChart).start();
     }
 
-    public void stop() {
-        hoppingPatternTimeSeriesChart.stop();
+    public void stopThread() {
+        hoppingPatternTimeSeriesChart.setTimeSeriesChartIsRunning(false);
+    }
+
+    public void startThread() {
+        hoppingPatternTimeSeriesChart.setTimeSeriesChartIsRunning(true);
     }
 }

@@ -43,8 +43,12 @@ public class PlotIntermediateFrequencyFFTPart implements Runnable{
         System.out.println("设置中频采样率为 " + intermediateFrequencyFFTChart.getSampleRate());
     }
 
-    public void stop() {
-        intermediateFrequencyFFTChart.stop();
+    public void stopThread() {
+        intermediateFrequencyFFTChart.setRunning(false);
+    }
+
+    public void startThread() {
+        intermediateFrequencyFFTChart.setRunning(true);
     }
 
     public float getSampleRate() {

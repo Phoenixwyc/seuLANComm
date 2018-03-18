@@ -98,8 +98,12 @@ public class ConstellationDiagramChart extends ChartPanel implements Runnable {
         }
     }
 
-    public void stop() {
-        this.isRunning = false;
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public void setRunning(boolean running) {
+        isRunning = running;
     }
 
     @Override

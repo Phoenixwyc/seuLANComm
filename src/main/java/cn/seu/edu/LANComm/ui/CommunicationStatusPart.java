@@ -264,7 +264,11 @@ public class CommunicationStatusPart implements Runnable{
     /**
      * 停止误码率计算线程
      */
-    public void stop() {
-        this.isRunning = false;
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public void setRunning(boolean running) {
+        isRunning = running;
     }
 }

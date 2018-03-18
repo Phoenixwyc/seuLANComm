@@ -15,7 +15,12 @@ import jpcap.PacketReceiver;
 import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
 
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -24,6 +29,8 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +55,22 @@ public class MainFrame {
             public void run() {
                 FrameSet frameSet = new FrameSet("实时数据显示");
                 frameSet.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frameSet.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosing(WindowEvent e) {
+                        // 点击关闭时窗口立即消失
+                        frameSet.dispose();
+                        // 等待5s，程序退出
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e1) {
+                            e1.printStackTrace();
+                        }finally {
+                            System.exit(0);
+                        }
+
+                    }
+                });
                 frameSet.setVisible(true);
                 System.out.println("主界面 " + frameSet.getUIParameterCollector());
             }
@@ -113,7 +136,15 @@ class FrameSet extends JFrame {
 
     private Map<String, Float> sampleRate = new HashMap<>();
 
+    /**
+     *  线程控制标识，在发送和结束之间切换
+     */
     private volatile boolean sendStarted = false;
+    /**
+     * 消除点击停止按钮后出现先发送参数配置的bug
+     */
+    private volatile boolean switchFlag = false;
+    private volatile boolean initThreadFlag = false;
 
     /**
      * 设置最优尺寸
@@ -221,6 +252,7 @@ class FrameSet extends JFrame {
 
         /**
          * 这里会比较复杂，单独拿出来，控制线程的启停与数据的收发
+         * 讲道理，这个actionListener不应该在这里，已经放着了就不动了
          */
         confirmButton.addActionListener(new ActionListener() {
             @Override
@@ -286,6 +318,19 @@ class FrameSet extends JFrame {
                 } else if (collector.getSwitchTransmitAndReceive().equals(RECEIVE_DATA)){
                     // TODO: 2018/2/25 这里执行数据接收
                     if (sendStarted) {
+                        if (initThreadFlag) {
+                            // 恢复被关闭的线程的状态控制位
+                            plotIntermediateFrequencyPart.startThread();
+                            plotIntermediateFrequencyFFTPart.startThread();
+                            plotConstellationDiagramPart.startThread();
+                            plotHoppingPatternPart.startThread();
+                            communicationStatusPart.setRunning(true);
+                            constellationDataPacketDispatcher.setRunning(true);
+                            hoppingPatternDataPacketDispatcher.setRunning(true);
+                            intermediateFrequencyDataPacketDispatcher.setRunning(true);
+                            receivedSymbolPacketDispatcher.setRunning(true);
+                            transmittedSymbolPacketDispatcher.setRunning(true);
+                        }
                         // dump文件的位置
                         Map<String, String> pathMap = DumpFileUtil.getDumFilePath();
                         String intermediateFrequencyDataDumpFilePath = pathMap.get(INTERMEDIATEFREQUENCY_DATA);
@@ -316,9 +361,6 @@ class FrameSet extends JFrame {
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
-
-
-
 
                         // 中频信号FFT接收
                         Thread intermediateFrequencyFFTPlotter = new Thread(plotIntermediateFrequencyFFTPart);
@@ -351,14 +393,14 @@ class FrameSet extends JFrame {
                         receivedSymbolPacketDispatcher.setCaptor(receivedDataReceiver.getCaptor());
                         new Thread(transmittedDataReceiver).start();
                         new Thread(receivedDataReceiver).start();
-                        Thread symbolErroRate = new Thread(communicationStatusPart = new CommunicationStatusPart(transmittedSymbol, receivedSymbol));
-                        symbolErroRate.start();
+                        Thread symbolErrorRate = new Thread(communicationStatusPart = new CommunicationStatusPart(transmittedSymbol, receivedSymbol));
+                        symbolErrorRate.start();
 
                         confirmButton.setActionCommand(STOP_COMMAND);
                         confirmButton.setText(STOP_COMMAND);
                         System.out.println("确认按钮的指令：" + confirmButton.getActionCommand());
                         
-                    } else {
+                    } else if (!switchFlag){
                         JOptionPane.showMessageDialog(null, "先发送配置参数，在启动数据接收", "错误", JOptionPane.ERROR_MESSAGE);
                     }
                 }
@@ -371,27 +413,29 @@ class FrameSet extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (confirmButton.getActionCommand().equals(STOP_COMMAND)) {
                     sendStarted = false;
+                    switchFlag = true;
+                    initThreadFlag = true;
                     confirmButton.setActionCommand(SEND_DATA);
                     confirmButton.setText(CONFIRM);
                     /**
                      * 停止绘图线程
                      */
-                    plotIntermediateFrequencyPart.stop();
-                    plotIntermediateFrequencyFFTPart.stop();
-                    plotConstellationDiagramPart.stop();
-                    plotHoppingPatternPart.stop();
+                    plotIntermediateFrequencyPart.stopThread();
+                    plotIntermediateFrequencyFFTPart.stopThread();
+                    plotConstellationDiagramPart.stopThread();
+                    plotHoppingPatternPart.stopThread();
                     /**
                      * 停止误码率计算线程
                      */
-                    communicationStatusPart.stop();
+                    communicationStatusPart.setRunning(false);
                     /**
                      * 停止数据接收线程
                      */
-                    constellationDataPacketDispatcher.stop();
-                    hoppingPatternDataPacketDispatcher.stop();
-                    intermediateFrequencyDataPacketDispatcher.stop();
-                    receivedSymbolPacketDispatcher.stop();
-                    transmittedSymbolPacketDispatcher.stop();
+                    constellationDataPacketDispatcher.setRunning(false);
+                    hoppingPatternDataPacketDispatcher.setRunning(false);
+                    intermediateFrequencyDataPacketDispatcher.setRunning(false);
+                    receivedSymbolPacketDispatcher.setRunning(false);
+                    transmittedSymbolPacketDispatcher.setRunning(false);
                     /**
                      * 停止关闭文件读写器,关闭时候死机什么鬼
                      */
@@ -426,6 +470,8 @@ class FrameSet extends JFrame {
         }
         System.out.println();
     }
+
+
 
 
 }

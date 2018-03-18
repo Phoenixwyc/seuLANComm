@@ -39,7 +39,7 @@ public class TransmittedSymbolPacketDispatcher implements PacketReceiver{
                 }
                 try {
                     boolean success = data.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
-                    System.out.println("插入时接收符号数据缓冲区大小 " + data.size());
+                    System.out.println("插入发送符号时数据缓冲区大小 " + data.size());
                     if (!success) {
                         System.out.println("发送的数据符号插入失败");
                     }
@@ -81,8 +81,12 @@ public class TransmittedSymbolPacketDispatcher implements PacketReceiver{
         this.writer = writer;
     }
 
-    public void stop() {
-        this.isRunning = false;
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public void setRunning(boolean running) {
+        isRunning = running;
     }
 
     public JpcapCaptor getCaptor() {

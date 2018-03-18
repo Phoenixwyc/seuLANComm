@@ -114,8 +114,12 @@ public class HoppingPatternTimeSeriesChart extends ChartPanel implements Runnabl
         }
     }
 
-    public void stop() {
-        this.timeSeriesChartIsRunning = false;
+    public boolean isTimeSeriesChartIsRunning() {
+        return timeSeriesChartIsRunning;
+    }
+
+    public void setTimeSeriesChartIsRunning(boolean timeSeriesChartIsRunning) {
+        this.timeSeriesChartIsRunning = timeSeriesChartIsRunning;
     }
 
     @Override
