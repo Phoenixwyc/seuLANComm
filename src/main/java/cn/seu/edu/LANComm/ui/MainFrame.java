@@ -404,7 +404,7 @@ class FrameSet extends JFrame {
                         confirmButton.setText(STOP_COMMAND);
                         
                     } else {
-                        JOptionPane.showMessageDialog(null, "先发送配置参数，在启动数据接收", "错误", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "先发送配置参数，在启动数据接收", "提示", JOptionPane.INFORMATION_MESSAGE);
                     }
                 }
             }
