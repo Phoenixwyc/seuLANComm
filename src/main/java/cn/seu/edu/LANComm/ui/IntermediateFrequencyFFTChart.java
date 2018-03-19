@@ -76,12 +76,10 @@ public class IntermediateFrequencyFFTChart extends ChartPanel implements Runnabl
 
     @Override
     public void run() {
-        System.out.println("中频信号FFT绘图开始");
         try {
             while (isRunning) {
                 Packet packet = data.poll(10000, TimeUnit.MILLISECONDS);
                 if (packet != null) {
-                    System.out.println("绘图时中频频率数据缓冲区大小为 " + data.size());
                     float[] dataReceived = new FramingDecoder(packet.data).getTransmittedData();
                     // 扩充数据点至不小于原始点数的2的次幂
                     float[] dataToAdd = expandData(dataReceived);
@@ -97,10 +95,10 @@ public class IntermediateFrequencyFFTChart extends ChartPanel implements Runnabl
                     }
                     Thread.sleep(this.updateIntervalInmills);
                 } else {
-                    System.out.println("中频FFT数据缓冲区没有数据");
+                    TimedDialog.getDialog("错误","中频FFT绘制时，接收中频数据超时，" +
+                            "请检查接收端数据发送状态", JOptionPane.ERROR_MESSAGE, false,0);
                 }
             }
-            System.out.println("中频信号FFT绘图线程停止");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -137,9 +135,7 @@ public class IntermediateFrequencyFFTChart extends ChartPanel implements Runnabl
     private int getNextPow2(int initData) {
         int res = 0;
         if (initData <= MINIUM_SIZE) {
-            System.out.println("数据太少 " + initData + " 最少需要 " + MINIUM_SIZE);
-            JOptionPane.showMessageDialog(null, "用于FFT计算的点数太少",
-                                        "FFT警告", JOptionPane.WARNING_MESSAGE);
+            TimedDialog.getDialog("警告","中频FFT计算时数据量太少", JOptionPane.WARNING_MESSAGE, false,0);
         }
         // 帧长度的限制，数据长度最多255
         if (initData <= 16) {

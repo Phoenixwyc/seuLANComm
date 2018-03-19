@@ -2,18 +2,21 @@ package cn.seu.edu.LANComm.communication.dispatcher;
 
 import cn.seu.edu.LANComm.communication.util.DataLinkParameterEnum;
 import cn.seu.edu.LANComm.communication.util.FramingDecoder;
+import cn.seu.edu.LANComm.ui.TimedDialog;
 import jpcap.JpcapCaptor;
 import jpcap.JpcapWriter;
 import jpcap.PacketReceiver;
 import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
 
+import javax.swing.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
  * 中频采样信号分发器
  * Created by Administrator on 2018/3/13.
+ * @author WYCPhoenix
  */
 public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver{
     private static TimeUnit OFFER_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
@@ -45,13 +48,11 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
                 try {
                     boolean success = data.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
                     boolean successFFT = dataForFFT.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
-                    System.out.println("插入时FFT数据缓冲区大小 " + dataForFFT.size());
-                    System.out.println("插入时中频时域信号缓冲区大小 " + data.size());
                     if (!success) {
-                        System.out.println("中频信号数据插入失败");
+                        TimedDialog.getDialog("错误","中频数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false,0);
                     }
                     if (!successFFT) {
-                        System.out.println("中频信号FFT数据插入失败");
+                        TimedDialog.getDialog("错误","中频FFT数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false,0);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();

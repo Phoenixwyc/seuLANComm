@@ -4,12 +4,7 @@ import cn.seu.edu.LANComm.communication.util.FramingDecoder;
 import cn.seu.edu.LANComm.util.FontEnum;
 import jpcap.packet.Packet;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.Color;
@@ -194,31 +189,24 @@ public class CommunicationStatusPart implements Runnable{
         int packageCount = 0;
         try {
             while (packageCount <= PACKAGE_PER_CAL && isRunning) {
-                Packet TxPacket = TxSymbol.poll(10000, TimeUnit.MILLISECONDS);
-                Packet RxPacket = RxSymbol.poll(10000, TimeUnit.MILLISECONDS);
+                Packet TxPacket = TxSymbol.poll(20000, TimeUnit.MILLISECONDS);
+                Packet RxPacket = RxSymbol.poll(20000, TimeUnit.MILLISECONDS);
                 if (TxPacket != null && RxPacket != null) {
                     float[] symbolTx = new FramingDecoder(TxPacket.data).getTransmittedData();
-                    System.out.println("接收的符号");
-                    showArray(symbolTx);
                     float[] symbolRx = new FramingDecoder(RxPacket.data).getTransmittedData();
-                    System.out.println("发送的符号");
-                    showArray(symbolRx);
                     // 更新接收的符号总数
                     if (lastTotalReceivedSymbol < Long.MAX_VALUE) {
                         lastTotalReceivedSymbol = lastTotalReceivedSymbol + symbolTx.length;
-                        System.out.println("接收的符号个数：" + lastTotalReceivedSymbol);
                     } else {
                         lastTotalReceivedSymbol = 1;
                     }
                     // 更新接收帧数总数
                     packageCount = packageCount + 1;
-                    System.out.println("接收的帧的个数：" + packageCount);
                     // 更新错误符号总数
                     for (int index = 0; index <= symbolTx.length - 1; index++) {
                         if (symbolTx[index] != symbolRx[index]) {
                             if (lastTotalErrorSymbol < Long.MAX_VALUE) {
                                 lastTotalErrorSymbol++;
-                                System.out.println("错误的符号个数：" + lastTotalErrorSymbol);
                             } else {
                                 lastTotalErrorSymbol = 0;
                             }
@@ -226,10 +214,10 @@ public class CommunicationStatusPart implements Runnable{
                     }
                 } else {
                     if (TxPacket == null) {
-                        System.out.println("发送的符号接收超时");
+                        TimedDialog.getDialog("错误","误码计算时发射端数据提取超时", JOptionPane.ERROR_MESSAGE, false,0);
                     }
                     if (RxPacket == null) {
-                        System.out.println("接收的符号接收超时");
+                        TimedDialog.getDialog("错误","误码计算时接收端数据提取超时", JOptionPane.ERROR_MESSAGE, false,0);
                     }
                 }
             }
@@ -244,21 +232,14 @@ public class CommunicationStatusPart implements Runnable{
 
     @Override
     public void run() {
-        System.out.println("误码率计算线程启动");
         // 更新误码数据显示
         while (isRunning) {
             String errorRate = symbolErrorRateCal().toString();
             setBitErrorRateTextFieldString(errorRate);
-            System.out.println("误码率计算结果：" + errorRate);
         }
-        System.out.println("误码率计算线程已经停止");
-    }
-
-    private void showArray(float[] data) {
-        for (float item : data) {
-            System.out.print(item + " ");
-        }
-        System.out.println();
+        //重置误码率显示
+        lastTotalErrorSymbol = 0;
+        bitErrorRate.setText("0.0");
     }
 
     /**

@@ -13,7 +13,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.Dimension;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -71,15 +71,13 @@ public class ConstellationDiagramChart extends ChartPanel implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("星座绘图线程启动");
         try {
             while (isRunning) {
                 Packet packet = data.poll(10000, TimeUnit.MILLISECONDS);
                 if (packet != null) {
-                    System.out.println("绘图是星座数据缓冲区大小为 " + data.size());
                     float[] dataToAdd = new FramingDecoder(packet.data).getTransmittedData();
                     if (dataToAdd.length % 2 != 0) {
-                        System.out.println("星座数据错误，IQ必须成对出现");
+                        TimedDialog.getDialog("错误","星座数据IQ必须成对出现，该帧将被忽略", JOptionPane.ERROR_MESSAGE, false,0);
                     } else {
                         for (int index = 0; index < dataToAdd.length; ) {
                             xySeries.addOrUpdate(dataToAdd[index], dataToAdd[++index]);
@@ -89,10 +87,9 @@ public class ConstellationDiagramChart extends ChartPanel implements Runnable {
                     }
 
                 } else {
-                    System.out.println("星座数据缓冲区数据为空");
+                    TimedDialog.getDialog("错误","绘制星座图时星座数据队列为空，请检查接收端数据发送状态", JOptionPane.ERROR_MESSAGE, false,0);
                 }
             }
-            System.out.println("星座绘图线程停止");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -37,7 +37,6 @@ public class PlotHoppingPatternPart implements Runnable{
 
     @Override
     public void run() {
-        System.out.println("跳频图案接收线程启动");
         new Thread(hoppingPatternTimeSeriesChart).start();
     }
 

@@ -19,8 +19,8 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.ui.TextAnchor;
 
-import javax.swing.JPanel;
-import java.awt.*;
+import javax.swing.*;
+import java.awt.Dimension;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -93,22 +93,19 @@ public class HoppingPatternTimeSeriesChart extends ChartPanel implements Runnabl
 
     @Override
     public void run() {
-        System.out.println("跳频图案绘制贤臣启动");
         try {
             while (timeSeriesChartIsRunning) {
                 Packet packet = blockingQueue.poll(10000, TimeUnit.MILLISECONDS);
                 if (packet != null) {
-                    System.out.println("绘图时跳频图案数据缓冲区大小为 " + blockingQueue.size());
                     float[] dataToAdd = new FramingDecoder(packet.data).getTransmittedData();
                     for (float data : dataToAdd) {
                         timeSeries.addOrUpdate(new Millisecond(), data);
                     }
                     Thread.sleep(this.updataIntervalInmills);
                 } else {
-                    System.out.println("缓冲区无数据");
+                    TimedDialog.getDialog("错误","绘制跳频图案时，队列没有数据，请检查发送端数据发送状态", JOptionPane.ERROR_MESSAGE, false,0);
                 }
             }
-            System.out.println("跳频图案绘图线程停止");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

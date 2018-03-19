@@ -2,12 +2,7 @@ package cn.seu.edu.LANComm.ui;
 
 import cn.seu.edu.LANComm.util.*;
 
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.Color;
@@ -192,13 +187,13 @@ public class CommunicationParameterSettingPart {
                             Method method = clazz.getMethod(valueSetMethodName, Float.class);
                             method.invoke(collector, value);
                         } catch (NoSuchMethodException e1) {
-                            System.out.println(e1);
+                            TimedDialog.getDialog("错误",e1.getMessage(), JOptionPane.ERROR_MESSAGE, false,0);
                         } catch (InvocationTargetException e1) {
-                            System.out.println(e1);
+                            TimedDialog.getDialog("错误",e1.getMessage(), JOptionPane.ERROR_MESSAGE, false,0);
                         } catch (IllegalAccessException e1) {
-                            System.out.println(e1);
+                            TimedDialog.getDialog("错误",e1.getMessage(), JOptionPane.ERROR_MESSAGE, false,0);
                         } finally {
-                            // TODO: 2018/1/29 finally处理 
+                            // TODO: 2018/1/29 finally处理
                         }
                     }
                 });

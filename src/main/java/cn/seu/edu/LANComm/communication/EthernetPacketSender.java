@@ -5,11 +5,13 @@ import cn.seu.edu.LANComm.communication.util.FramingEncoder;
 import cn.seu.edu.LANComm.communication.util.MACStringConvertor;
 import cn.seu.edu.LANComm.communication.util.NetworkInterfaceUtil;
 import cn.seu.edu.LANComm.communication.util.ParameterUnitEnum;
+import cn.seu.edu.LANComm.ui.TimedDialog;
 import jpcap.JpcapSender;
 import jpcap.NetworkInterface;
 import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
 
+import javax.swing.JOptionPane;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -37,7 +39,7 @@ public class EthernetPacketSender {
     @SuppressWarnings("all")
     private static void sendData(short frameType, byte[]destMAC, byte[] srcMAC, byte[] data, JpcapSender sender) {
         if (!checkData(frameType, destMAC, srcMAC, data, sender)) {
-            System.out.println("参数不合理");
+            TimedDialog.getDialog("警告","发送数据不合理", JOptionPane.INFORMATION_MESSAGE ,false,0);
         }
         // 组装MAC帧
         EthernetPacket ethernetPacket = new EthernetPacket();
@@ -91,9 +93,7 @@ public class EthernetPacketSender {
             try {
                 sender = JpcapSender.openDevice(deviceUsed);
             } catch (IOException e) {
-                // TODO: 2018/2/24 增加端口打开异常处理
-            } finally {
-                // TODO: 2018/2/24 资源回收
+                TimedDialog.getDialog("错误","网卡打开失败，请确认上位机MAC地址或者重启程序", JOptionPane.ERROR_MESSAGE, false,0);
             }
             // float数组转为字节数组
             byte[] dataBytes = FramingEncoder.getByteToSend(dataLinkParameterEnum, data);
@@ -118,12 +118,11 @@ public class EthernetPacketSender {
                 sendData(Short.parseShort(DataLinkParameterEnum.FRAME_TYPE.getDataType()),
                         desMAC, srcMAC, bytesToSend, sender);
             }
-            // 关闭资源
             if (sender != null) {
                 sender.close();
             }
         } else {
-            // TODO: 2018/2/24 端口错误提示
+            TimedDialog.getDialog("错误","上位机MAC地址选择错误", JOptionPane.ERROR_MESSAGE, false,0);
         }
 
     }

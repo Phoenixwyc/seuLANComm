@@ -37,10 +37,8 @@ public class PlotIntermediateFrequencyFFTPart implements Runnable{
 
     @Override
     public void run() {
-        System.out.println("中频FFT接收线程开始");
         intermediateFrequencyFFTChart.setSampleRate(getSampleRate());
         new Thread(intermediateFrequencyFFTChart).start();
-        System.out.println("设置中频采样率为 " + intermediateFrequencyFFTChart.getSampleRate());
     }
 
     public void stopThread() {

@@ -35,7 +35,7 @@ public class MACExchangeDialog {
     private static final String MAC_PROPERTIES = "MAC.properties";
     private static final String TX_MAC_KEY = "TxMAC";
     private static final String RX_MAC_KEY = "RxMAC";
-    private static final String TXMAC_LABEL = "发端方 MAC";
+    private static final String TXMAC_LABEL = "发送方 MAC";
     private static final String RXMAX_LABEL = "接收方 MAC";
     private static final String LOCAL_MAC_LABEL = "上位机 MAC";
     private static final String COMFIRM = "确 认";
@@ -150,35 +150,8 @@ public class MACExchangeDialog {
                     collector.setRxMAC(RxMACString);
                     collector.setLocalMAC(localMACList.getItemAt(localMACList.getSelectedIndex()));
 
-                    // 将新的MAC地址写入文件
-                    FileWriter writer = null;
-                    try {
-                        // 设置新的值
-                        properties.clear();
-                        properties.setProperty(TX_MAC_KEY, TxMACString);
-                        properties.setProperty(RX_MAC_KEY, RxMACString);
-                        File file  = new File(ClassLoader.getSystemResource(MAC_PROPERTIES).getPath());
-                        writer = new FileWriter(file);
-
-                        SimpleDateFormat format = new SimpleDateFormat ("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
-                        String date = format.format(new Date());
-                        properties.store(writer, date);
-                        System.out.println("新的Pr" + properties);
-                    }catch (IOException ex) {
-
-                    } finally {
-                        if (writer != null) {
-                            try {
-                                writer.flush();
-                                writer.close();
-                            } catch (IOException ex) {
-                                // do nothing
-                            }
-                        }
-                    }
                     // TODO: 2018/2/5 增加MAC地址的连接测试功能，保证MAC设置是可靠的
                     mainFrame.dispose();
-                    System.out.println(collector);
                 }else {
                     showErrorDialog(mainFrame, "MAC参数设置错误");
                 }

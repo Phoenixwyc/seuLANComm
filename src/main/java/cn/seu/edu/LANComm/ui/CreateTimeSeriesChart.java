@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Administrator on 2018/2/1.
- * http://blog.csdn.net/danmo598/article/details/21541177
  * @author WYCPhoenix
  * @date 2018-2-1-22:05
  */
@@ -85,23 +84,19 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
     }
     @Override
     public void run() {
-        System.out.println("中频信号绘图线程启动");
-        // TODO: 2018/2/1 消费者，数据来自网卡，实现timeSeries的数据更新
         try {
             while (isRunning) {
                 Packet packet = data.poll(10000, TimeUnit.MILLISECONDS);
                 if (packet != null) {
-                    System.out.println("绘图时中频时域信号数据缓冲区大小为 " + data.size());
                     float[] dataToAdd = new FramingDecoder(packet.data).getTransmittedData();
                     for (float data : dataToAdd) {
                         timeSeries.addOrUpdate(new Millisecond(), data);
                     }
                     Thread.sleep(this.undateIntervalInmills);
                 } else {
-                    System.out.println("数据缓冲区为空");
+                    TimedDialog.getDialog("错误","绘制中频信号时，中频信号缓冲区为空，请检查发送端数据发送状态", JOptionPane.ERROR_MESSAGE, false,0);
                 }
             }
-            System.out.println("中频信号时域绘图线程停止");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

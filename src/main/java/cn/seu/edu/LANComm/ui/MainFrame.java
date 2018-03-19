@@ -62,7 +62,7 @@ public class MainFrame {
                         frameSet.dispose();
                         // 等待5s，程序退出
                         try {
-                            Thread.sleep(10000);
+                            Thread.sleep(5000);
                         } catch (InterruptedException e1) {
                             e1.printStackTrace();
                         }finally {
@@ -72,7 +72,6 @@ public class MainFrame {
                     }
                 });
                 frameSet.setVisible(true);
-                System.out.println("主界面 " + frameSet.getUIParameterCollector());
             }
         });
     }
@@ -140,10 +139,7 @@ class FrameSet extends JFrame {
      *  线程控制标识，在发送和结束之间切换
      */
     private volatile boolean sendStarted = false;
-    /**
-     * 消除点击停止按钮后出现先发送参数配置的bug
-     */
-    private volatile boolean switchFlag = false;
+
     private volatile boolean initThreadFlag = false;
 
     /**
@@ -258,10 +254,6 @@ class FrameSet extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (collector.getSwitchTransmitAndReceive().equals(SEND_DATA)){
-                    // TODO: 2018/2/25 这里执行数据发送，主要完成参数的发送、连接测试
-                    // 发送参数配置数据
-                    System.out.println("待发送的数据");
-                    showArray(collector.getParameterSelected());
                     EthernetPacketSender.sendEthernetPacket(new String[]{collector.getTxMAC(), collector.getRxMAC()},
                             collector.getLocalMAC(), DataLinkParameterEnum.PARAMETER_SETTING, collector.getParameterSelected());
                     // 接收中频采样信号, 一次性使用，写一个匿名内部类算球~
@@ -286,22 +278,26 @@ class FrameSet extends JFrame {
                                             if (MACStringConvertor.macToString(ethernetPacket.src_mac).equals(collector.getTxMAC())) {
                                                 float[] sampleRateTx = decoder.getTransmittedData();
                                                 sampleRate.put(collector.getTxMAC(), new Float(sampleRateTx[0]));
-                                                System.out.println("收到Tx: " + collector.getTxMAC() + " 中频采样率: " + sampleRateTx[0]);
                                             } else if (MACStringConvertor.macToString(ethernetPacket.src_mac).equals(collector.getRxMAC())) {
                                                 float[] sampleRateRx = decoder.getTransmittedData();
                                                 sampleRate.put(collector.getRxMAC(), new Float(sampleRateRx[0]));
-                                                System.out.println("收到Rx: " + collector.getRxMAC() + " 中频采样率: " + sampleRateRx[0]);
                                             }
                                             if (sampleRate.keySet().size() == 2) {
                                                 // 设置中频采样率
                                                 plotIntermediateFrequencyFFTPart.setSampleRate(sampleRate.get(collector.getRxMAC()));
                                                 jpcapCaptor.breakLoop();
-                                                System.out.println("emmm， 中频采样接收完成，中频接收资源关闭 " +
-                                                "发送端 " + collector.getTxMAC() + "中频采样率 " + sampleRate.get(collector.getTxMAC()) +
-                                                "接收端 " + collector.getRxMAC() + " 中频采样率 " + sampleRate.get(collector.getRxMAC()) +
-                                                "中频功率谱采样率 " + plotIntermediateFrequencyFFTPart.getSampleRate());
-                                                sendStarted = true;
-
+                                                TimedDialog.getDialog("消息","发送端TxMAC: " + collector.getTxMAC() + " 采样率: " + sampleRate.get(collector.getTxMAC()).floatValue() + "\n" +
+                                                                                             "接收端RxMAC: " + collector.getRxMAC() + "采样率: " + sampleRate.get(collector.getRxMAC()).floatValue() + "\n"
+                                                                                            + collector.toString(), JOptionPane.INFORMATION_MESSAGE, false,10000);
+                                                if (sampleRate.get(collector.getTxMAC()).equals(sampleRate.get(collector.getRxMAC()))) {
+                                                    sendStarted = true;
+                                                } else {
+                                                    TimedDialog.getDialog("错误","收发端采样率不一致！" +
+                                                            "发送端采样率: " + sampleRate.get(collector.getRxMAC()).floatValue() +
+                                                            "接收端采样率: " + sampleRate.get(collector.getRxMAC()).floatValue(),
+                                                            JOptionPane.ERROR_MESSAGE, false,0);
+                                                    sendStarted = false;
+                                                }
                                             }
                                         }
                                     }
@@ -313,10 +309,9 @@ class FrameSet extends JFrame {
                             }
                         }
                     } catch (IOException e1) {
-                        System.out.println("fuck 接收中频采样是怎么打不开端口！！");
+                        TimedDialog.getDialog("错误","网卡打开失败，检查上位机MAC地址或者重启程序", JOptionPane.ERROR_MESSAGE, false,0);
                     }
                 } else if (collector.getSwitchTransmitAndReceive().equals(RECEIVE_DATA)){
-                    // TODO: 2018/2/25 这里执行数据接收
                     if (sendStarted) {
                         if (initThreadFlag) {
                             // 恢复被关闭的线程的状态控制位
@@ -334,6 +329,9 @@ class FrameSet extends JFrame {
                         // dump文件的位置
                         Map<String, String> pathMap = DumpFileUtil.getDumFilePath();
                         String intermediateFrequencyDataDumpFilePath = pathMap.get(INTERMEDIATEFREQUENCY_DATA);
+                        /**
+                         * 下面四种数据类型因不需要写入文件，暂时保留名字在这里
+                         */
                         String constellationDataDumpFilePath = pathMap.get(CONSTELLATION_DATA);
                         String hoppingPatternDataDumpFilePath = pathMap.get(HOPPING_PATTERN_DATA);
                         String transmittedSymbolDataDumpFilePath = pathMap.get(TRANSMITTED_SYMBOL);
@@ -344,15 +342,17 @@ class FrameSet extends JFrame {
                                 DataLinkParameterEnum.COMMUNICATION_START, new float[]{0F});
 
                         // 各种数据的接收线程
+                        String RxFilter = "ether src " + collector.getRxMAC().replace("-", ":");
                         // 中频信号接收
                         Thread intermediateFrequenceDataPlotter = new Thread(plotIntermediateFrequencyPart);
                         intermediateFrequenceDataPlotter.start();
                         intermediateFrequencyDataPacketDispatcher = new IntermediateFrequencyDataPacketDispatcher(4000,
                                                                                             intermediateFrequenceData, intermediateFrequenceDataFFT);
-                        String TxFilter = "ether src " + collector.getTxMAC().replace("-", ":");
                         DataReceiver intermediateFrequencyDataReceiver = new DataReceiver(collector.getLocalMAC(),
-                                                                                            TxFilter, intermediateFrequencyDataPacketDispatcher);
+                                RxFilter, intermediateFrequencyDataPacketDispatcher);
                         new Thread(intermediateFrequencyDataReceiver).start();
+
+                        // 中频信号的下写入
                         intermediateFrequencyDataPacketDispatcher.setCaptor(intermediateFrequencyDataReceiver.getCaptor());
                         try {
                             JpcapCaptor captor = intermediateFrequencyDataReceiver.getCaptor();
@@ -371,25 +371,29 @@ class FrameSet extends JFrame {
                         constellationDiagramPlotter.start();
                         constellationDataPacketDispatcher = new ConstellationDataPacketDispatcher(4000, constellationData);
                         DataReceiver constellationDataReceiver = new DataReceiver(collector.getLocalMAC(),
-                                TxFilter, constellationDataPacketDispatcher);
+                                RxFilter, constellationDataPacketDispatcher);
                         constellationDataPacketDispatcher.setCaptor(constellationDataReceiver.getCaptor());
                         new Thread(constellationDataReceiver).start();
+
+                        // 星座数据的写入
                         
                         // 接收端跳频图案
                         Thread hoppingPatternPlotter = new Thread(plotHoppingPatternPart);
                         hoppingPatternPlotter.start();
 
                         hoppingPatternDataPacketDispatcher = new HoppingPatternDataPacketDispatcher(4000, hoppingPatternData);
-                        DataReceiver hoppingPatternDataReceiver = new DataReceiver(collector.getLocalMAC(), TxFilter, hoppingPatternDataPacketDispatcher);
+                        DataReceiver hoppingPatternDataReceiver = new DataReceiver(collector.getLocalMAC(), RxFilter, hoppingPatternDataPacketDispatcher);
                         hoppingPatternDataPacketDispatcher.setCaptor(hoppingPatternDataReceiver.getCaptor());
                         new Thread(hoppingPatternDataReceiver).start();
 
-                        // TODO: 2018/3/17 在这里开启误码率计算线程
+                        // 误码率计算线程
+                        String TxFilter = "ether src " + collector.getTxMAC().replace("-", ":");
                         transmittedSymbolPacketDispatcher = new TransmittedSymbolPacketDispatcher(4000, transmittedSymbol);
                         DataReceiver transmittedDataReceiver = new DataReceiver(collector.getLocalMAC(), TxFilter, transmittedSymbolPacketDispatcher);
                         transmittedSymbolPacketDispatcher.setCaptor(transmittedDataReceiver.getCaptor());
                         receivedSymbolPacketDispatcher = new ReceivedSymbolPacketDispatcher(4000, receivedSymbol);
-                        DataReceiver receivedDataReceiver = new DataReceiver(collector.getLocalMAC(), TxFilter, receivedSymbolPacketDispatcher);
+
+                        DataReceiver receivedDataReceiver = new DataReceiver(collector.getLocalMAC(), RxFilter, receivedSymbolPacketDispatcher);
                         receivedSymbolPacketDispatcher.setCaptor(receivedDataReceiver.getCaptor());
                         new Thread(transmittedDataReceiver).start();
                         new Thread(receivedDataReceiver).start();
@@ -398,9 +402,8 @@ class FrameSet extends JFrame {
 
                         confirmButton.setActionCommand(STOP_COMMAND);
                         confirmButton.setText(STOP_COMMAND);
-                        System.out.println("确认按钮的指令：" + confirmButton.getActionCommand());
                         
-                    } else if (!switchFlag){
+                    } else {
                         JOptionPane.showMessageDialog(null, "先发送配置参数，在启动数据接收", "错误", JOptionPane.ERROR_MESSAGE);
                     }
                 }
@@ -413,7 +416,6 @@ class FrameSet extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (confirmButton.getActionCommand().equals(STOP_COMMAND)) {
                     sendStarted = false;
-                    switchFlag = true;
                     initThreadFlag = true;
                     confirmButton.setActionCommand(SEND_DATA);
                     confirmButton.setText(CONFIRM);
@@ -442,36 +444,21 @@ class FrameSet extends JFrame {
 //                    if (intermediateFrequencyDataWriter != null) {
 //                        intermediateFrequencyDataWriter.close();
 //                    }
+
                     /**
                      * 发送停止指令，下位机回到接收参数状态
                      */
                     EthernetPacketSender.sendEthernetPacket(new String[]{collector.getTxMAC(), collector.getRxMAC()},
                             collector.getLocalMAC(), DataLinkParameterEnum.COMMUNICATION_STOP, new float[]{0.0F});
+                    // 这里等待 2 s,等待后台线程停止
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
                     JOptionPane.showMessageDialog(null, "停止接收，请重新设置参数开始新一轮数据接收");
-                    System.out.println("确认按钮的指令：" + confirmButton.getActionCommand());
                 }
             }
         });
     }
-
-    /**
-     * 通信参数收集器
-     * note：仅用于调用getter方法，禁止使用setter方法
-     * @return 通信参数设置汇总
-     */
-    public UIParameterCollector getUIParameterCollector() {
-        return collector;
-    }
-
-
-    private void showArray(float[] data) {
-        for (float item : data) {
-            System.out.print(item + " ");
-        }
-        System.out.println();
-    }
-
-
-
-
 }

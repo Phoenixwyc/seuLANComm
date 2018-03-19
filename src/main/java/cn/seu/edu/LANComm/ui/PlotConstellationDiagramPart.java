@@ -37,7 +37,6 @@ public class PlotConstellationDiagramPart implements Runnable{
     }
     @Override
     public void run() {
-        System.out.println("接收星座线程启动");
         new Thread(constellationDiagramChart).start();
     }
 

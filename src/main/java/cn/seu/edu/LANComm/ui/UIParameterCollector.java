@@ -323,25 +323,25 @@ public final class UIParameterCollector {
 
     @Override
     public String toString() {
-        return "UIParameterCollector{" +
-                "mode='" + mode + '\'' +
-                ", rb=" + rb +
-                ", rbUnit='" + rbUnit + '\'' +
-                ", fc=" + fc +
-                ", fcUnit='" + fcUnit + '\'' +
-                ", transmitGain=" + transmitGain +
-                ", transmitGainUnit='" + transmitGainUnit + '\'' +
-                ", receiveGain=" + receiveGain +
-                ", receiveGainUnit='" + receiveGainUnit + '\'' +
-                ", frequenceOffset=" + frequenceOffset +
-                ", frequenceOffsetUnit='" + frequenceOffsetUnit + '\'' +
-                ", hop=" + hop +
-                ", hopUnit='" + hopUnit + '\'' +
-                ", switchTransmitAndReceive='" + switchTransmitAndReceive + '\'' +
-                ", confirmButtonIsSelected=" + confirmButtonIsSelected +
-                ", TxMAC='" + TxMAC + '\'' +
-                ", RxMAC='" + RxMAC + '\'' +
-                ", LocalMAC='" + LocalMAC + '\'' +
-                '}';
+        return "下位机配置信息{" + "\n" +
+                "mode='" + mode + '\'' + "\n" +
+                ", rb=" + rb + "\n" +
+                ", rbUnit='" + rbUnit + '\'' + "\n" +
+                ", fc=" + fc + "\n" +
+                ", fcUnit='" + fcUnit + '\'' + "\n" +
+                ", transmitGain=" + transmitGain + "\n" +
+                ", transmitGainUnit='" + transmitGainUnit + '\'' + "\n" +
+                ", receiveGain=" + receiveGain + "\n" +
+                ", receiveGainUnit='" + receiveGainUnit + '\'' + "\n" +
+                ", frequenceOffset=" + frequenceOffset + "\n" +
+                ", frequenceOffsetUnit='" + frequenceOffsetUnit + '\'' + "\n" +
+                ", hop=" + hop + "\n" +
+                ", hopUnit='" + hopUnit + '\'' + "\n" +
+                ", switchTransmitAndReceive='" + switchTransmitAndReceive + '\'' + "\n" +
+                ", confirmButtonIsSelected=" + confirmButtonIsSelected + "\n" +
+                ", TxMAC='" + TxMAC + '\'' + "\n" +
+                ", RxMAC='" + RxMAC + '\'' + "\n" +
+                ", LocalMAC='" + LocalMAC + '\'' + "\n" +
+                '}'+ "\n";
     }
 }

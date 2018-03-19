@@ -89,7 +89,6 @@ public class CommunicationTXRxSelectorPart {
             @Override
             public void actionPerformed(ActionEvent e) {
                 collector.setConfirmButtonIsSelected(true);
-                System.out.println("确认按钮 " + collector);
             }
         });
         confirmPanel.setLayout(new FlowLayout(FlowLayout.CENTER));

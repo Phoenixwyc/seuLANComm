@@ -1,13 +1,17 @@
 package cn.seu.edu.LANComm.communication.receiver;
 
 import cn.seu.edu.LANComm.communication.util.NetworkInterfaceUtil;
+import cn.seu.edu.LANComm.ui.TimedDialog;
 import jpcap.JpcapCaptor;
 import jpcap.PacketReceiver;
 
+import javax.swing.*;
 import java.io.IOException;
 
 /**
+ * 各类数据接收线程
  * Created by Administrator on 2018/3/13.
+ * @author WYCPhoenox
  */
 public class DataReceiver implements Runnable{
     private String localMAC;
@@ -36,14 +40,13 @@ public class DataReceiver implements Runnable{
                 e.printStackTrace();
             }
         } else {
-            System.out.println("网卡打开失败");
+            TimedDialog.getDialog("错误","网卡打开失败，请确认MAC地址或重启启动程序", JOptionPane.ERROR_MESSAGE, false,0);
         }
         return captor;
     }
 
     @Override
     public void run() {
-        System.out.println("中频信号接收线程开始");
         captor = getJpcapCaptor();
         try {
             captor.setFilter(filter, true);
@@ -51,7 +54,6 @@ public class DataReceiver implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("数据接收线程停止");
     }
 
     public String getLocalMAC() {

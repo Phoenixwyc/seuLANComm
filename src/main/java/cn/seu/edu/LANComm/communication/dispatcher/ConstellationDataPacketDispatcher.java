@@ -2,17 +2,21 @@ package cn.seu.edu.LANComm.communication.dispatcher;
 
 import cn.seu.edu.LANComm.communication.util.DataLinkParameterEnum;
 import cn.seu.edu.LANComm.communication.util.FramingDecoder;
+import cn.seu.edu.LANComm.ui.TimedDialog;
 import jpcap.JpcapCaptor;
 import jpcap.JpcapWriter;
 import jpcap.PacketReceiver;
 import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
 
+import javax.swing.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 星座数据分发器
  * Created by Administrator on 2018/3/13.
+ * @author WYCPhoenix
  */
 public class ConstellationDataPacketDispatcher implements PacketReceiver{
     private static final TimeUnit OFFER_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
@@ -39,9 +43,8 @@ public class ConstellationDataPacketDispatcher implements PacketReceiver{
                 }
                 try {
                     boolean success = data.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
-                    System.out.println("插入时星座数据缓冲区大小 " + data.size());
                     if (!success) {
-                        System.out.println("星座数据插入失败");
+                        TimedDialog.getDialog("错误","星座数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false,0);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -51,7 +54,6 @@ public class ConstellationDataPacketDispatcher implements PacketReceiver{
         if (!isRunning) {
             captor = getCaptor();
             captor.breakLoop();
-            System.out.println("星座分发线程停止");
         }
     }
 

@@ -2,17 +2,21 @@ package cn.seu.edu.LANComm.communication.dispatcher;
 
 import cn.seu.edu.LANComm.communication.util.DataLinkParameterEnum;
 import cn.seu.edu.LANComm.communication.util.FramingDecoder;
+import cn.seu.edu.LANComm.ui.TimedDialog;
 import jpcap.JpcapCaptor;
 import jpcap.JpcapWriter;
 import jpcap.PacketReceiver;
 import jpcap.packet.EthernetPacket;
 import jpcap.packet.Packet;
 
+import javax.swing.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 接收端接收符号分发器
  * Created by Administrator on 2018/3/13.
+ * @author WYCPhoenix
  */
 public class ReceivedSymbolPacketDispatcher implements PacketReceiver{
     private static final TimeUnit OFFER_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
@@ -39,9 +43,8 @@ public class ReceivedSymbolPacketDispatcher implements PacketReceiver{
                 }
                 try {
                     boolean success = data.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
-                    System.out.println("插入接收符号时数据缓冲区大小为 " + data.size());
                     if (!success) {
-                        System.out.println("接收符号数据包插入失败");
+                        TimedDialog.getDialog("错误","解调符号数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false,0);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -52,7 +55,6 @@ public class ReceivedSymbolPacketDispatcher implements PacketReceiver{
             captor = getCaptor();
             if (captor != null) {
                 captor.breakLoop();
-                System.out.println("接收符号接收线程停止");
             }
         }
     }
