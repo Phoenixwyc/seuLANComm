@@ -31,18 +31,10 @@ public class DumpFileUtil {
      * @return
      */
     private  static String getParentFolderPath() {
-        String path=Thread.currentThread().getContextClassLoader().getResource("").toString();
-        // 去除file:
-        path=path.replace("file:", "");
-        // 去除 classes
-        path=path.replace("classes/", "");
-        // 去除target
-        path=path.replace("target/", "");
-        // 去除第一/
-        path=path.substring(1);
+        String path = System.getProperty("user.dir").replace('\\', '/');
         SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
         String dateString = format.format(new Date());
-        return path +  dateString;
+        return path + "/" +dateString;
     }
 
     /**
@@ -91,5 +83,6 @@ public class DumpFileUtil {
     public static void main(String[] args){
         Map<String, String> pathMap = getDumFilePath();
         System.out.println(pathMap.toString());
+
     }
 }

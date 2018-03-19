@@ -60,6 +60,7 @@ public class MainFrame {
                     public void windowClosing(WindowEvent e) {
                         // 点击关闭时窗口立即消失
                         frameSet.dispose();
+                        TimedDialog.getDialog("提示", "程序退入后台\n 5 秒后将自动结束", JOptionPane.INFORMATION_MESSAGE, false, 0);
                         // 等待5s，程序退出
                         try {
                             Thread.sleep(5000);
@@ -326,7 +327,7 @@ class FrameSet extends JFrame {
                             receivedSymbolPacketDispatcher.setRunning(true);
                             transmittedSymbolPacketDispatcher.setRunning(true);
                         }
-                        // dump文件的位置
+//                        // dump文件的位置
                         Map<String, String> pathMap = DumpFileUtil.getDumFilePath();
                         String intermediateFrequencyDataDumpFilePath = pathMap.get(INTERMEDIATEFREQUENCY_DATA);
                         /**
