@@ -167,6 +167,10 @@ class FrameSet extends JFrame {
     private static final String CONFIRM = "确认";
 
     /**
+     * 跳频模式特征，mode以-FH结尾
+     */
+    private static final String FH = "-FH";
+    /**
      * dump文件位置的key
      */
     private static final String INTERMEDIATEFREQUENCY_DATA = "IntermediateFrequencyData.log";
@@ -184,7 +188,7 @@ class FrameSet extends JFrame {
         // 主窗口标题
         super.setTitle(title);
         // 主窗口大小可调
-        super.setResizable(true);
+        super.setResizable(false);
         // ICON
         String path = System.getProperty("user.dir").replace('\\', '/') + "/config/";
         Image mainFrameIcon = new ImageIcon(path + "MainFrame.png").getImage();
@@ -212,7 +216,7 @@ class FrameSet extends JFrame {
         // 绘图面板
         JPanel plotPanel = new JPanel(new GridLayout(1,4));
         plotPanel.setBackground(Color.WHITE);
-        plotPanel.setSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+        plotPanel.setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
         // 中频时域图
         JPanel intermediateFrequencyPartPanel = new JPanel();
         intermediateFrequencyPartPanel.setBackground(Color.WHITE);
@@ -324,7 +328,6 @@ class FrameSet extends JFrame {
                             plotHoppingPatternPart.startThread();
                             communicationStatusPart.setRunning(true);
                             constellationDataPacketDispatcher.setRunning(true);
-                            hoppingPatternDataPacketDispatcher.setRunning(true);
                             intermediateFrequencyDataPacketDispatcher.setRunning(true);
                             receivedSymbolPacketDispatcher.setRunning(true);
                             transmittedSymbolPacketDispatcher.setRunning(true);
@@ -379,15 +382,19 @@ class FrameSet extends JFrame {
                         new Thread(constellationDataReceiver).start();
 
                         // 星座数据的写入
-                        
-                        // 接收端跳频图案
-                        Thread hoppingPatternPlotter = new Thread(plotHoppingPatternPart);
-                        hoppingPatternPlotter.start();
 
-                        hoppingPatternDataPacketDispatcher = new HoppingPatternDataPacketDispatcher(4000, hoppingPatternData);
-                        DataReceiver hoppingPatternDataReceiver = new DataReceiver(collector.getLocalMAC(), RxFilter, hoppingPatternDataPacketDispatcher);
-                        hoppingPatternDataPacketDispatcher.setCaptor(hoppingPatternDataReceiver.getCaptor());
-                        new Thread(hoppingPatternDataReceiver).start();
+                        // 只有在跳频模式下启动跳频图案接收
+                        if (collector.getMode().endsWith(FH)) {
+                            // 接收端跳频图案
+                            Thread hoppingPatternPlotter = new Thread(plotHoppingPatternPart);
+                            hoppingPatternPlotter.start();
+
+                            hoppingPatternDataPacketDispatcher = new HoppingPatternDataPacketDispatcher(4000, hoppingPatternData);
+                            hoppingPatternDataPacketDispatcher.setRunning(true);
+                            DataReceiver hoppingPatternDataReceiver = new DataReceiver(collector.getLocalMAC(), RxFilter, hoppingPatternDataPacketDispatcher);
+                            hoppingPatternDataPacketDispatcher.setCaptor(hoppingPatternDataReceiver.getCaptor());
+                            new Thread(hoppingPatternDataReceiver).start();
+                        }
 
                         // 误码率计算线程
                         String TxFilter = "ether src " + collector.getTxMAC().replace("-", ":");
@@ -433,9 +440,9 @@ class FrameSet extends JFrame {
                      * 停止误码率计算线程
                      */
                     communicationStatusPart.setRunning(false);
-                    // 这里等待 2 s,等待后台线程停止
+                    // 这里等待 0.5 s,等待后台线程停止
                     try {
-                        Thread.sleep(4000);
+                        Thread.sleep(500);
                     } catch (InterruptedException e1) {
                         e1.printStackTrace();
                     }
@@ -443,7 +450,9 @@ class FrameSet extends JFrame {
                      * 停止数据接收线程
                      */
                     constellationDataPacketDispatcher.setRunning(false);
-                    hoppingPatternDataPacketDispatcher.setRunning(false);
+                    if (collector.getMode().endsWith(FH)) {
+                        hoppingPatternDataPacketDispatcher.setRunning(false);
+                    }
                     intermediateFrequencyDataPacketDispatcher.setRunning(false);
                     receivedSymbolPacketDispatcher.setRunning(false);
                     transmittedSymbolPacketDispatcher.setRunning(false);
