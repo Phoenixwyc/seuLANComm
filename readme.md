@@ -14,6 +14,8 @@
 
 3、 如果没有JRE，双击seuLANComm.exe，如果有JRE，也可以点击seuLANComm.jar；
 
+4、 软件使用上，按序操作，不要随意点击
+
 ## 下位机开发注意事项
 
 1、 见onfig目录下的配置文件
