@@ -55,12 +55,12 @@ public class CommunicationStatusPart implements Runnable{
     /**
      * 统计误码率变量
      */
-    private long lastTotalReceivedSymbol;
-    private long lastTotalErrorSymbol;
+    private volatile long lastTotalReceivedSymbol;
+    private volatile long lastTotalErrorSymbol;
     /**
      * 误符号率显示
      */
-    private static JTextField bitErrorRate;
+    private volatile static JTextField bitErrorRate;
     /**
      * 状态显示
      */
@@ -214,10 +214,14 @@ public class CommunicationStatusPart implements Runnable{
                     }
                 } else {
                     if (TxPacket == null) {
-                        TimedDialog.getDialog("错误","误码计算时发射端数据提取超时", JOptionPane.ERROR_MESSAGE, false,0);
+                        if (isRunning) {
+                            TimedDialog.getDialog("错误", "误码计算时发射端数据提取超时", JOptionPane.ERROR_MESSAGE, false, 0);
+                        }
                     }
                     if (RxPacket == null) {
-                        TimedDialog.getDialog("错误","误码计算时接收端数据提取超时", JOptionPane.ERROR_MESSAGE, false,0);
+                        if (isRunning) {
+                            TimedDialog.getDialog("错误", "误码计算时接收端数据提取超时", JOptionPane.ERROR_MESSAGE, false, 0);
+                        }
                     }
                 }
             }
@@ -239,6 +243,7 @@ public class CommunicationStatusPart implements Runnable{
         }
         //重置误码率显示
         lastTotalErrorSymbol = 0;
+        lastTotalReceivedSymbol = 1;
         bitErrorRate.setText("0.0");
     }
 

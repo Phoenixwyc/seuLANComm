@@ -59,8 +59,9 @@ public class MainFrame {
                     @Override
                     public void windowClosing(WindowEvent e) {
                         // 点击关闭时窗口立即消失
+                        TimedDialog.getDialog("提示", "程序将退入后台\n"+
+                                " 5 秒后自动结束", JOptionPane.INFORMATION_MESSAGE, true, 0);
                         frameSet.dispose();
-                        TimedDialog.getDialog("提示", "程序退入后台\n 5 秒后将自动结束", JOptionPane.INFORMATION_MESSAGE, false, 0);
                         // 等待5s，程序退出
                         try {
                             Thread.sleep(5000);
@@ -94,7 +95,7 @@ class FrameSet extends JFrame {
     /**
      *
      */
-    CommunicationStatusPart communicationStatusPart;
+    private CommunicationStatusPart communicationStatusPart;
     /**
      * 5个控制数据接收的线程
      */
@@ -185,7 +186,8 @@ class FrameSet extends JFrame {
         // 主窗口大小可调
         super.setResizable(true);
         // ICON
-        Image mainFrameIcon = new ImageIcon("MainIcon.jpg").getImage();
+        String path = System.getProperty("user.dir").replace('\\', '/') + "/config/";
+        Image mainFrameIcon = new ImageIcon(path + "MainFrame.png").getImage();
         super.setIconImage(mainFrameIcon);
         super.setLayout(new FlowLayout());
 
@@ -196,7 +198,7 @@ class FrameSet extends JFrame {
         JPanel parameterPanel = new JPanel();
         parameterPanel.setBackground(Color.WHITE);
         // 通信模式选择部分
-        parameterPanel.add(CommunicationModeSelectorAndParameterSettingPart.createCommunicationModeSelectorAndParameterSettingPanel("LANComm.proerties", collector));
+        parameterPanel.add(CommunicationModeSelectorAndParameterSettingPart.createCommunicationModeSelectorAndParameterSettingPanel("LANComm.properties", collector));
 
         // 通信状态部分
         Map<String, Object> statusPanel = CommunicationStatusPart.createStatusPanel();
@@ -431,6 +433,12 @@ class FrameSet extends JFrame {
                      * 停止误码率计算线程
                      */
                     communicationStatusPart.setRunning(false);
+                    // 这里等待 2 s,等待后台线程停止
+                    try {
+                        Thread.sleep(4000);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
                     /**
                      * 停止数据接收线程
                      */
@@ -451,12 +459,6 @@ class FrameSet extends JFrame {
                      */
                     EthernetPacketSender.sendEthernetPacket(new String[]{collector.getTxMAC(), collector.getRxMAC()},
                             collector.getLocalMAC(), DataLinkParameterEnum.COMMUNICATION_STOP, new float[]{0.0F});
-                    // 这里等待 2 s,等待后台线程停止
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e1) {
-                        e1.printStackTrace();
-                    }
                     JOptionPane.showMessageDialog(null, "停止接收，请重新设置参数开始新一轮数据接收");
                 }
             }

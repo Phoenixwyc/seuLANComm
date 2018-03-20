@@ -4,9 +4,7 @@ package cn.seu.edu.LANComm.util;
  * Created by Administrator on 2018/1/26.
  */
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,12 +25,13 @@ public class ReadModeConfiguration {
     private static final String KEY_SEPARATOR = "-";
     private static Properties properties;
 
-    synchronized private static void loadPropertiesFile(String propertyFilePath) {
+    synchronized private static void loadPropertiesFile(String propertyFileName) {
         properties = new Properties();
         InputStream inputStream = null;
 
         try {
-            inputStream = ClassLoader.getSystemResourceAsStream(propertyFilePath);
+            String path = System.getProperty("user.dir").replace('\\', '/') + "/config/" + propertyFileName;
+            inputStream = new BufferedInputStream(new FileInputStream(path));
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
             System.out.println("文件不存在");
@@ -44,21 +43,21 @@ public class ReadModeConfiguration {
                     inputStream.close();
                 }
             } catch (IOException e) {
-                System.out.println("文件流关闭出现异常");
+                // you can do nothing!
             }
         }
     }
 
     /**
      * 从 LANComm.properties 文件中根据通信模式提取对应的配置
-     * @param propertyFilePath 配置文件路径
+     * @param propertyFileName 配置文件名
      * @param communicationMode 通信模式
      * @return 通信配置对应的配置
      */
-    public static Map<String, String> getCommunicationModeConfigureation(String propertyFilePath, String communicationMode) {
+    public static Map<String, String> getCommunicationModeConfigureation(String propertyFileName, String communicationMode) {
         Map<String, String> configuration = new HashMap<>();
         // 加载配置文件
-        loadPropertiesFile(propertyFilePath);
+        loadPropertiesFile(propertyFileName);
         // 迭代 CommunicationModeEnum 类
         EnumSet<CommunicationModeEnum> communicationModeEnumEnumSet = EnumSet.allOf(CommunicationModeEnum.class);
         Iterator<CommunicationModeEnum> communicationModeEnumIterator = communicationModeEnumEnumSet.iterator();

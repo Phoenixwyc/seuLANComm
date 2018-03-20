@@ -95,8 +95,10 @@ public class IntermediateFrequencyFFTChart extends ChartPanel implements Runnabl
                     }
                     Thread.sleep(this.updateIntervalInmills);
                 } else {
-                    TimedDialog.getDialog("错误","中频FFT绘制时，接收中频数据超时，" +
-                            "请检查接收端数据发送状态", JOptionPane.ERROR_MESSAGE, false,0);
+                    if (isRunning) {
+                        TimedDialog.getDialog("错误", "中频FFT绘制时，接收中频数据超时，" +
+                                "请检查接收端数据发送状态", JOptionPane.ERROR_MESSAGE, false, 0);
+                    }
                 }
             }
         } catch (InterruptedException e) {

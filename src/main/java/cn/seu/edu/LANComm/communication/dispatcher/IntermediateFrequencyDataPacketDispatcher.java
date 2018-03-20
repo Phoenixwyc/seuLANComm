@@ -52,7 +52,10 @@ public class IntermediateFrequencyDataPacketDispatcher implements PacketReceiver
                         TimedDialog.getDialog("错误","中频数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false,0);
                     }
                     if (!successFFT) {
-                        TimedDialog.getDialog("错误","中频FFT数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false,0);
+                        if (isRunning) {
+                            TimedDialog.getDialog("错误", "中频FFT数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false, 0);
+                        }
+
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();

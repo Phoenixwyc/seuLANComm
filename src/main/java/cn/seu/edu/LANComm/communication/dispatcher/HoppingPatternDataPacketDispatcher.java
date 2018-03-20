@@ -44,7 +44,9 @@ public class HoppingPatternDataPacketDispatcher implements PacketReceiver{
                 try {
                     boolean success = data.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
                     if (!success) {
-                        TimedDialog.getDialog("错误","跳频图案数据数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false,0);
+                        if (isRunning) {
+                            TimedDialog.getDialog("错误", "跳频图案数据数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false, 0);
+                        }
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();

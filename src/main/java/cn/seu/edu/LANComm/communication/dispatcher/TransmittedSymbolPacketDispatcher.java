@@ -44,7 +44,9 @@ public class TransmittedSymbolPacketDispatcher implements PacketReceiver{
                 try {
                     boolean success = data.offer(packet, offerTimeout, OFFER_TIMEOUT_UNIT);
                     if (!success) {
-                        TimedDialog.getDialog("错误","发送端发送符号数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false,0);
+                        if (isRunning) {
+                            TimedDialog.getDialog("错误", "发送端发送符号数据队列满，队列没有消费", JOptionPane.ERROR_MESSAGE, false, 0);
+                        }
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();

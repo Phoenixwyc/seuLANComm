@@ -95,7 +95,7 @@ public class HoppingPatternTimeSeriesChart extends ChartPanel implements Runnabl
     public void run() {
         try {
             while (timeSeriesChartIsRunning) {
-                Packet packet = blockingQueue.poll(10000, TimeUnit.MILLISECONDS);
+                Packet packet = blockingQueue.poll(20000, TimeUnit.MILLISECONDS);
                 if (packet != null) {
                     float[] dataToAdd = new FramingDecoder(packet.data).getTransmittedData();
                     for (float data : dataToAdd) {
@@ -103,7 +103,9 @@ public class HoppingPatternTimeSeriesChart extends ChartPanel implements Runnabl
                     }
                     Thread.sleep(this.updataIntervalInmills);
                 } else {
-                    TimedDialog.getDialog("错误","绘制跳频图案时，队列没有数据，请检查发送端数据发送状态", JOptionPane.ERROR_MESSAGE, false,0);
+                    if (timeSeriesChartIsRunning) {
+                        TimedDialog.getDialog("错误", "绘制跳频图案时，队列没有数据，请检查发送端数据发送状态", JOptionPane.ERROR_MESSAGE, false, 0);
+                    }
                 }
             }
         } catch (InterruptedException e) {

@@ -149,7 +149,29 @@ public class MACExchangeDialog {
                     collector.setTxMAC(TxMACString);
                     collector.setRxMAC(RxMACString);
                     collector.setLocalMAC(localMACList.getItemAt(localMACList.getSelectedIndex()));
-
+                    // 更新MAC配置文件
+                    OutputStream outputStream = null;
+                    try {
+                        String path = System.getProperty("user.dir").replace('\\', '/') + "/config/";
+                        outputStream = new FileOutputStream(path + MAC_PROPERTIES);
+                        // step1 清空缓冲区
+                        properties.clear();
+                        // step2 更新内容
+                        properties.setProperty(TX_MAC_KEY, TxMACString);
+                        properties.setProperty(RX_MAC_KEY, RxMACString);
+                        // step3 保存
+                        properties.store(outputStream, "最后修改时间");
+                    } catch (IOException e1) {
+                        TimedDialog.getDialog("错误", "MAC文件更新失败", JOptionPane.ERROR_MESSAGE, true, 0);
+                    } finally {
+                        if (outputStream != null) {
+                            try {
+                                outputStream.close();
+                            } catch (IOException e1) {
+                                // you can do nothing
+                            }
+                        }
+                    }
                     // TODO: 2018/2/5 增加MAC地址的连接测试功能，保证MAC设置是可靠的
                     mainFrame.dispose();
                 }else {
@@ -188,13 +210,24 @@ public class MACExchangeDialog {
         JOptionPane.showMessageDialog(parentComponent, errorMessage,"错误", JOptionPane.ERROR_MESSAGE);
     }
 
-    private static Properties readMACPropertiesFile(String filePath) {
+    private static Properties readMACPropertiesFile(String fileName) {
         Properties properties = new Properties();
-        InputStream inputStream = ClassLoader.getSystemResourceAsStream(filePath);
+        // 读取特定目录下的配置文件
+        String filePath = System.getProperty("user.dir").replace('\\', '/') + "/config/" + fileName;
+        InputStream inputStream = null;
         try{
+            inputStream = new BufferedInputStream(new FileInputStream((filePath)));
             properties.load(inputStream);
         }catch (IOException e) {
-            e.printStackTrace();
+            TimedDialog.getDialog("错误", "MAC配置文件不存在,请填写MAC地址", JOptionPane.ERROR_MESSAGE, false, 0);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    // you can do nothing
+                }
+            }
         }
         return properties;
     }

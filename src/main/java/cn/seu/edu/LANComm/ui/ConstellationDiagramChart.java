@@ -87,7 +87,9 @@ public class ConstellationDiagramChart extends ChartPanel implements Runnable {
                     }
 
                 } else {
-                    TimedDialog.getDialog("错误","绘制星座图时星座数据队列为空，请检查接收端数据发送状态", JOptionPane.ERROR_MESSAGE, false,0);
+                    if (isRunning) {
+                        TimedDialog.getDialog("错误", "绘制星座图时星座数据队列为空，请检查接收端数据发送状态", JOptionPane.ERROR_MESSAGE, false, 0);
+                    }
                 }
             }
         } catch (InterruptedException e) {

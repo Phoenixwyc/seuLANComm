@@ -94,7 +94,9 @@ public class CreateTimeSeriesChart extends ChartPanel implements Runnable{
                     }
                     Thread.sleep(this.undateIntervalInmills);
                 } else {
-                    TimedDialog.getDialog("错误","绘制中频信号时，中频信号缓冲区为空，请检查发送端数据发送状态", JOptionPane.ERROR_MESSAGE, false,0);
+                    if (isRunning) {
+                        TimedDialog.getDialog("错误", "绘制中频信号时，中频信号缓冲区为空，请检查发送端数据发送状态", JOptionPane.ERROR_MESSAGE, false, 0);
+                    }
                 }
             }
         } catch (InterruptedException e) {
