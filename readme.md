@@ -2,7 +2,7 @@
 
 ## 运行环境要求 
 
-1、 win7 **64位操作系统**
+1、 必须是windows 64位平台，推荐win7 **64位操作系统**
 
 2、 winpcap
 
@@ -42,7 +42,7 @@
 
 3、 下位机控制指令，见src\main\java\cn\seu\edu\LANComm\communication\util\DataLinkParameterEnum中的定义
 
-4、 数据类型，统一为**float类型**，4个字节表示，字节顺序为**Big Endian**；
+4、 数据类型，所有的配置参数统一为**有符号float类型**，4个字节表示；frametype为**有符号Short类型**，两个字节；数据链路层帧类型为**有符号Byte**，一个字节；帧长度字段为**无符号byte**，一个字节；字节顺序统一为**Big Endian**；
 
 5、 上位机向下位机发送参数配置信息时，各参数的顺序见src\main\java\cn\seu\edu\LANComm\ui\UIParameterCollector中的定义
 
