@@ -1,7 +1,11 @@
 package cn.seu.edu.LANComm.ui;
 
 import cn.seu.edu.LANComm.communication.EthernetPacketSender;
-import cn.seu.edu.LANComm.communication.dispatcher.*;
+import cn.seu.edu.LANComm.communication.dispatcher.ConstellationDataPacketDispatcher;
+import cn.seu.edu.LANComm.communication.dispatcher.HoppingPatternDataPacketDispatcher;
+import cn.seu.edu.LANComm.communication.dispatcher.IntermediateFrequencyDataPacketDispatcher;
+import cn.seu.edu.LANComm.communication.dispatcher.ReceivedSymbolPacketDispatcher;
+import cn.seu.edu.LANComm.communication.dispatcher.TransmittedSymbolPacketDispatcher;
 import cn.seu.edu.LANComm.communication.receiver.DataReceiver;
 import cn.seu.edu.LANComm.communication.util.DataLinkParameterEnum;
 import cn.seu.edu.LANComm.communication.util.FramingDecoder;
@@ -34,6 +38,8 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -58,13 +64,10 @@ public class MainFrame {
                 frameSet.addWindowListener(new WindowAdapter() {
                     @Override
                     public void windowClosing(WindowEvent e) {
-                        // 点击关闭时窗口立即消失
-                        TimedDialog.getDialog("提示", "程序将退入后台\n"+
-                                " 5 秒后自动结束", JOptionPane.INFORMATION_MESSAGE, true, 0);
                         frameSet.dispose();
-                        // 等待5s，程序退出
+                        // 等待2s，程序退出
                         try {
-                            Thread.sleep(5000);
+                            Thread.sleep(1000);
                         } catch (InterruptedException e1) {
                             e1.printStackTrace();
                         }finally {
@@ -310,6 +313,19 @@ class FrameSet extends JFrame {
                                     }
                                 }
                             };
+                            /**
+                             * 增加一个定时器，解决无法接收下位中频采样率时软件阻塞问题
+                             */
+                            Timer timer = new Timer();
+                            timer.schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    if (!sendStarted) {
+                                        jpcapCaptor.breakLoop();
+                                        TimedDialog.getDialog("超时", "接收下位机中频采样率超时，检查下位机状态或MAC地址", JOptionPane.ERROR_MESSAGE, true, 0);
+                                    }
+                                }
+                            }, 5000);
                             jpcapCaptor.loopPacket(-1, sampleRateReceiver);
                             if (jpcapCaptor != null) {
                                 jpcapCaptor.close();
@@ -456,13 +472,6 @@ class FrameSet extends JFrame {
                     intermediateFrequencyDataPacketDispatcher.setRunning(false);
                     receivedSymbolPacketDispatcher.setRunning(false);
                     transmittedSymbolPacketDispatcher.setRunning(false);
-                    /**
-                     * 停止关闭文件读写器,关闭时候死机什么鬼
-                     */
-//                    if (intermediateFrequencyDataWriter != null) {
-//                        intermediateFrequencyDataWriter.close();
-//                    }
-
                     /**
                      * 发送停止指令，下位机回到接收参数状态
                      */
