@@ -310,7 +310,7 @@ public class CommunicationParameterSettingPart {
         JFrame frame = new JFrame();
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(createCommunicationParameterSettingPanel("DQPSK-FH", "LANComm.proerties", collector));
+        frame.add(createCommunicationParameterSettingPanel("DQPSK-FH", "LANComm.properties", collector));
         frame.pack();
     }
 
