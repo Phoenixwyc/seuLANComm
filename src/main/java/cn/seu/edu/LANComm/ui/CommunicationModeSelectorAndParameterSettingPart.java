@@ -4,11 +4,7 @@ import cn.seu.edu.LANComm.util.CommunicationModeEnum;
 import cn.seu.edu.LANComm.util.ExtendStringToSameLength;
 import cn.seu.edu.LANComm.util.FontEnum;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.Color;
@@ -155,10 +151,15 @@ public class CommunicationModeSelectorAndParameterSettingPart {
     }
 
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         JFrame frame = new JFrame();
 
         UIParameterCollector collector = new UIParameterCollector();
-        frame.add(createCommunicationModeSelectorAndParameterSettingPanel("LANComm.proerties", collector));
+        frame.add(createCommunicationModeSelectorAndParameterSettingPanel("LANComm.properties", collector));
         frame.setVisible(true);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
