@@ -1,11 +1,8 @@
 package cn.seu.edu.LANComm.ui;
-
 import cn.seu.edu.LANComm.communication.util.MACStringConvertor;
 import cn.seu.edu.LANComm.communication.util.NetworkInterfaceUtil;
 import cn.seu.edu.LANComm.util.ExtendStringToSameLength;
 import cn.seu.edu.LANComm.util.FontEnum;
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-import sun.awt.geom.AreaOp;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -23,10 +20,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Created by Administrator on 2018/2/4.
