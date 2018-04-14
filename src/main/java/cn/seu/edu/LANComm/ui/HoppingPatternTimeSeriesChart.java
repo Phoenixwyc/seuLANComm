@@ -8,16 +8,11 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.axis.DateAxis;
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.labels.ItemLabelAnchor;
-import org.jfree.chart.labels.ItemLabelPosition;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.ui.TextAnchor;
 
 import javax.swing.*;
 import java.awt.Dimension;
@@ -64,15 +59,6 @@ public class HoppingPatternTimeSeriesChart extends ChartPanel implements Runnabl
         lineAndShapeRenderer.setBaseShapesVisible(true);
         lineAndShapeRenderer.setBaseShapesFilled(true);
         lineAndShapeRenderer.setBaseItemLabelsVisible(true);
-        // 数据点显示方式,仅显示Y数据
-        XYItemRenderer itemRenderer = jFreeChart.getXYPlot().getRenderer();
-        itemRenderer.setBaseItemLabelsVisible(true);
-        itemRenderer.setBasePositiveItemLabelPosition(new ItemLabelPosition(
-                ItemLabelAnchor.OUTSIDE12, TextAnchor.BASELINE_CENTER));
-        jFreeChart.getXYPlot().setRenderer(itemRenderer);
-        NumberAxis numberAxis = (NumberAxis) jFreeChart.getXYPlot().getRangeAxis();
-        numberAxis.setAutoRangeIncludesZero(true);
-        numberAxis.setAutoTickUnitSelection(true);
 
         ValueAxis valueAxis = jFreeChart.getXYPlot().getDomainAxis();
         valueAxis.setAutoRange(true);
