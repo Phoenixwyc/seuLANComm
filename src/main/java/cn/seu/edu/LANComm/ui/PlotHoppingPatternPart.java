@@ -1,5 +1,6 @@
 package cn.seu.edu.LANComm.ui;
 
+import cn.seu.edu.LANComm.util.ReadControllerConstants;
 import jpcap.packet.Packet;
 
 import javax.swing.JPanel;
@@ -15,8 +16,8 @@ public class PlotHoppingPatternPart implements Runnable{
     private static final String CHART_TITLE = "跳频图案时序图";
     private static final String XLABEL_NAME = "时间";
     private static final String YLABEL_NAME = "频率";
-    private static final double DATA_LENGTH_SHOWED = 100D;
-    private static final long UPDATE_INTERVAL = 10;
+    private static final double DATA_LENGTH_SHOWED = Double.parseDouble(ReadControllerConstants.getHoppingPatternDataLenShowed());
+    private static final long UPDATE_INTERVAL = Long.parseLong(ReadControllerConstants.getHoppingPatternUpdateInterval());
     private  HoppingPatternTimeSeriesChart hoppingPatternTimeSeriesChart;
     private JPanel chartPanel;
     private volatile boolean isRunning = true;

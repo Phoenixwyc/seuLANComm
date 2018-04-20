@@ -1,6 +1,7 @@
 package cn.seu.edu.LANComm.ui;
 
 
+import cn.seu.edu.LANComm.util.ReadControllerConstants;
 import jpcap.packet.Packet;
 
 import javax.swing.JPanel;
@@ -19,8 +20,8 @@ public class PlotIntermediateFrequencyPart implements Runnable{
     private static final String CHART_TITLE = "中频信号时域图";
     private static final String XLABEL_NAME = "时间";
     private static final String YLABEL_NAME = "幅度";
-    private static final double DATA_LENGTH_SHOWED = 1000D;
-    private static final long UPDATE_INTERVAL = 50;
+    private static final double DATA_LENGTH_SHOWED = Double.parseDouble(ReadControllerConstants.getIntermediateFrequencyDataLenShowed());
+    private static final long UPDATE_INTERVAL = Long.parseLong(ReadControllerConstants.getIntermediateFrequencyUpdateInterval());
     private  CreateTimeSeriesChart timeSeriesChart;
     private JPanel chartPanel;
     private volatile boolean isRunning = true;

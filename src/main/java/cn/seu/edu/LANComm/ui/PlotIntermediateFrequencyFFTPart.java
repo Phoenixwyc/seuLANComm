@@ -1,5 +1,6 @@
 package cn.seu.edu.LANComm.ui;
 
+import cn.seu.edu.LANComm.util.ReadControllerConstants;
 import jpcap.packet.Packet;
 
 import javax.swing.JPanel;
@@ -15,8 +16,8 @@ public class PlotIntermediateFrequencyFFTPart implements Runnable{
     private static final String CHART_TITLE = "中频信号功率谱图";
     private static final String XLABEL_NAME = "频率 MHz";
     private static final String YLABEL_NAME = "幅度";
-    private static final double DATA_LENGTH_SHOWED = 1000D;
-    private static final long UPDATE_INTERVAL = 100;
+    private static final double DATA_LENGTH_SHOWED = Double.parseDouble(ReadControllerConstants.getIntermediateFrequencyFFTDataLenShowed());
+    private static final long UPDATE_INTERVAL = Long.parseLong(ReadControllerConstants.getIntermediateFrequencyFFTUpdateInterval());
     private  IntermediateFrequencyFFTChart intermediateFrequencyFFTChart;
     private JPanel chartPanel;
     private volatile float sampleRate;

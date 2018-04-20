@@ -1,5 +1,6 @@
 package cn.seu.edu.LANComm.ui;
 
+import cn.seu.edu.LANComm.util.ReadControllerConstants;
 import jpcap.packet.Packet;
 
 import javax.swing.JPanel;
@@ -16,8 +17,8 @@ public class PlotConstellationDiagramPart implements Runnable{
     private static final String CHART_TITLE = "接收端星座图";
     private static final String XLABEL_NAME = "同相 I";
     private static final String YLABEL_NAME = "正交 Q";
-    private static final double DATA_LENGTH_SHOWED = 3D;
-    private static final long UPDATE_INTERVAL = 1;
+    private static final double DATA_LENGTH_SHOWED = Double.parseDouble(ReadControllerConstants.getConstellationDataLenShowed());
+    private static final long UPDATE_INTERVAL = Long.parseLong(ReadControllerConstants.getConstellationUpdateInterval());
     private  ConstellationDiagramChart constellationDiagramChart;
     private JPanel chartPanel;
     private volatile boolean isRunning = true;
