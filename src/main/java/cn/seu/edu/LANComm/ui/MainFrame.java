@@ -347,6 +347,13 @@ class FrameSet extends JFrame {
                             intermediateFrequencyDataPacketDispatcher.setRunning(true);
                             receivedSymbolPacketDispatcher.setRunning(true);
                             transmittedSymbolPacketDispatcher.setRunning(true);
+
+                            intermediateFrequenceData.clear();
+                            intermediateFrequenceDataFFT.clear();
+                            hoppingPatternData.clear();
+                            constellationData.clear();
+                            transmittedSymbol.clear();
+                            receivedSymbol.clear();
                         }
 //                        // dump文件的位置
                         Map<String, String> pathMap = DumpFileUtil.getDumFilePath();
