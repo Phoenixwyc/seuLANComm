@@ -32,7 +32,7 @@
 
     - 前导码、界定符、CRC为系统默认设置；
 
-    - FrameType字段固定为8511；
+    - FrameType字段固定为8181；
 
     - data段结构定义，见src\main\java\cn\seu\edu\LANComm\communication\util\FramingEncode中的描述；
 
